@@ -126,6 +126,9 @@ class DBmysql {
          $this->error     = 1;
       } else {
          $this->dbh->set_charset(isset($this->dbenc) ? $this->dbenc : "utf8");
+		 //[CRI]CH55 : Añadir set para variable max_join_size 13/09/2017
+		 //$this->dbh->query("SET SESSION SQL_BIG_SELECTS=1");
+		 //[CRI]FIN CH55		 
 
          if (GLPI_FORCE_EMPTY_SQL_MODE) {
             $this->dbh->query("SET SESSION sql_mode = ''");
@@ -170,6 +173,14 @@ class DBmysql {
 
       $res = @$this->dbh->query($query);
       if (!$res) {
+		//[CRI] INI CH55 Captura error 13/09/2017
+		if (strpos($this->dbh->error, 'MAX_JOIN_SIZE')!== false)
+		{
+			Session::addMessageAfterRedirect(__('La consulta excede el límite establecido por el sistema. Por favor, restrinja la consulta o reduzca el n&uacute;mero de campos a visualizar.'), false, ERROR);
+			 return $res;
+		}
+		 //[CRI] FIN CH55		  
+		  
          // no translation for error logs
          $error = "  *** MySQL query error:\n  SQL: ".addslashes($query)."\n  Error: ".
                    $this->dbh->error."\n";
@@ -654,7 +665,7 @@ class DBmysql {
       global $DB;
 
       $msg = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ZERO_DATE,NO_ZERO_IN_DATE,ONLY_FULL_GROUP_BY,NO_AUTO_CREATE_USER';
-      $req = $DB->request("SELECT @@sql_mode as mode");
+      $req = $DB->request("SELECT @@GLOBAL.sql_mode as mode"); //[CRI] CH55 Modif. Comprobacion SQlMode cambiar @@sql_mode por @@GLOBAL.sql_mode;
       if (($data = $req->next())) {
          return (preg_match("/STRICT_TRANS/", $data['mode'])
                  && preg_match("/NO_ZERO_/", $data['mode'])

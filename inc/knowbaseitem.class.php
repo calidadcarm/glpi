@@ -120,7 +120,12 @@ class KnowbaseItem extends CommonDBTM {
       if (Session::haveRight(self::$rightname, self::KNOWBASEADMIN)) {
          return true;
       }
-
+	  //[INICIO] CH47 si es anonymous permitir ver. 13/09/2017
+	  if (Session::isMultiEntitiesMode()) {
+		  return true;
+	  }
+	  //[FINAL]	  
+	  
       if ($this->fields["is_faq"]) {
          return ((Session::haveRightsOr(self::$rightname, array(READ, self::READFAQ))
                   && $this->haveVisibilityAccess())
@@ -218,7 +223,21 @@ class KnowbaseItem extends CommonDBTM {
       return true;
    }
 
-
+	static function checkConocimiento() {
+	
+	Global $DB;
+	
+		$query = "SELECT state FROM glpi_plugins WHERE directory='conocimiento';";
+		$result = $DB->query($query);
+		$row = $DB->fetch_array($result);
+		$estado= $row[0];
+		if ((isset($estado))&&($estado == 1)){
+			return true;
+		} else {
+			return false;
+		}
+	}	
+ 
    /**
     * Actions done at the end of the getEmpty function
     *
@@ -587,7 +606,7 @@ class KnowbaseItem extends CommonDBTM {
     * @return nothing (display the form)
    **/
    function showForm($ID, $options=array()) {
-      global $CFG_GLPI;
+      global $CFG_GLPI, $DB;
 
       // show kb item form
       if (!Session::haveRightsOr(self::$rightname,
@@ -708,11 +727,27 @@ class KnowbaseItem extends CommonDBTM {
          echo Html::hidden('_in_modal', array('value' => 1));
       }
 
-      echo "<textarea cols='$cols' rows='$rows' id='answer' name='answer'>".$this->fields["answer"];
-      echo "</textarea>";
+
+	 echo "<textarea cols='$cols' rows='$rows' id='answer' name='answer'>".$this->fields["answer"];
+     echo "</textarea>";	
+
       echo "</td>";
       echo "</tr>\n";
-
+	  
+	  // INFORGES - emb97m - Error conocido
+      if ($this->checkConocimiento()== true){
+			$query = "SELECT error_conocido FROM glpi_plugin_conocimiento_conocimientos 
+			          WHERE knowbaseitems_id='".$this->fields["id"]."';";
+			$result = $DB->query($query);
+			$row = $DB->fetch_array($result);
+			$error_conocido= $row['error_conocido'];
+			echo "<tr class='tab_bg_1'>";
+			echo "<td> Error conocido </td>";
+			echo "<td colspan='3'>";
+			Dropdown::showYesNo("error_conocido",$error_conocido);
+			echo "</td>";
+			echo "</tr>";		  
+	  } // Fin INFORGES
       if ($this->isNewID($ID)) {
          echo "<tr class='tab_bg_1'>";
          echo "<td>"._n('Target','Targets',1)."</td>";
@@ -733,6 +768,7 @@ class KnowbaseItem extends CommonDBTM {
       }
 
       $this->showFormButtons($options);
+	  
       return true;
    } // function showForm
 
@@ -824,6 +860,24 @@ class KnowbaseItem extends CommonDBTM {
       echo Toolbox::unclean_html_cross_side_scripting_deep($answer);
       echo "</div>";
       echo "</td></tr>";
+	  
+	  // INFORGES - emb97m - Error conocido
+      if ($this->checkConocimiento()== true){
+		  	echo "<tr><td class='left' colspan='4'><h2>Error conocido</h2>\n";
+			$query = "SELECT error_conocido FROM glpi_plugin_conocimiento_conocimientos 
+			          WHERE knowbaseitems_id='".$this->fields["id"]."';";
+			$result = $DB->query($query);
+			$row = $DB->fetch_array($result);
+			$error_conocido= $row['error_conocido'];
+			echo "<div id='kbanswer'>";
+			if ($error_conocido == 0){
+				echo 'NO';
+			} else {
+				echo 'SI';
+			}
+			echo "</div>";
+			echo "</td></tr>";		  
+	  } // Fin INFORGES
 
       echo "<tr><th class='tdkb'  colspan='2'>";
       if ($this->fields["users_id"]) {
@@ -1042,10 +1096,16 @@ class KnowbaseItem extends CommonDBTM {
                $where = self::addVisibilityRestrict();
             } else {
                // Anonymous access
-               if (Session::isMultiEntitiesMode()) {
+			   if (Session::isMultiEntitiesMode()) {
+			   //[INICIO] CH47 : Para mostrar en modo anomimo los items 13/09/2017
+			   /*
                   $where = " (`glpi_entities_knowbaseitems`.`entities_id` = '0'
                               AND `glpi_entities_knowbaseitems`.`is_recursive` = '1')";
-               }
+               */
+                  $where = " (`glpi_entities_knowbaseitems`.`entities_id` is not NULL
+                              AND `glpi_entities_knowbaseitems`.`is_recursive` is not NULL)";
+				//[FINAL]
+			   }
             }
             break;
       }
@@ -1202,7 +1262,7 @@ class KnowbaseItem extends CommonDBTM {
     * @param $options            $_GET
     * @param $type      string   search type : browse / search (default search)
    **/
-   static function showList($options, $type='search') {
+   static function showList($options, $type='browse') { //[CH42] Cambiar valor $type de search a browse predeterminado 13/09/2017
       global $DB, $CFG_GLPI;
 
       // Default values of parameters
@@ -1543,12 +1603,25 @@ class KnowbaseItem extends CommonDBTM {
       $tab                      = array();
       $tab['common']            = __('Characteristics');
 
+      //[INICIO] JMZ18G - 11/07/2018 - Permite enlazar en la búsqueda el objeto para poder editarlo.	  
+      $tab[1]['table']                = $this->getTable();
+      $tab[1]['field']                = 'name';
+      $tab[1]['name']                 = __('Title');
+      $tab[1]['datatype']             = 'itemlink';
+      $tab[1]['searchtype']           = 'contains';
+      $tab[1]['massiveaction']        = false;
+      $tab[1]['additionalfields']     = array('id', 'content');	  
+	  //[FINAL]
+	  
       $tab[2]['table']          = $this->getTable();
       $tab[2]['field']          = 'id';
       $tab[2]['name']           = __('ID');
       $tab[2]['massiveaction']  = false;
-      $tab[2]['datatype']       = 'number';
-
+	  $tab[2]['datatype']       = 'number';
+      //[INICIO] JMZ18G - 11/07/2018 - Permite enlazar en la búsqueda el objeto para poder editarlo.
+	  //$tab[2]['datatype']       = 'itemlink';
+	  //[FINAL]
+	  
       $tab[4]['table']          = 'glpi_knowbaseitemcategories';
       $tab[4]['field']          = 'name';
       $tab[4]['name']           = __('Category');
@@ -1559,11 +1632,6 @@ class KnowbaseItem extends CommonDBTM {
       $tab[5]['name']           = __('Date');
       $tab[5]['datatype']       = 'datetime';
       $tab[5]['massiveaction']  = false;
-
-      $tab[6]['table']          = $this->getTable();
-      $tab[6]['field']          = 'name';
-      $tab[6]['name']           = __('Subject');
-      $tab[6]['datatype']       = 'text';
 
       $tab[7]['table']          = $this->getTable();
       $tab[7]['field']          = 'answer';
@@ -1604,17 +1672,6 @@ class KnowbaseItem extends CommonDBTM {
       $tab[70]['massiveaction'] = false;
       $tab[70]['datatype']      = 'dropdown';
       $tab[70]['right']         = 'all';
-
-      $tab[80]['table']         = 'glpi_entities';
-      $tab[80]['field']         = 'completename';
-      $tab[80]['name']          = __('Entity');
-      $tab[80]['massiveaction'] = false;
-      $tab[80]['datatype']      = 'dropdown';
-
-      $tab[86]['table']         = $this->getTable();
-      $tab[86]['field']         = 'is_recursive';
-      $tab[86]['name']          = __('Child entities');
-      $tab[86]['datatype']      = 'bool';
 
       // add objectlock search options
       $tab += ObjectLock::getSearchOptionsToAdd( get_class($this) ) ;

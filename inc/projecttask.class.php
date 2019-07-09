@@ -54,7 +54,7 @@ class ProjectTask extends CommonDBChild {
    static public $items_id     = 'projects_id';
 
    protected $team             = array();
-   static $rightname           = 'projecttask';
+   static $rightname           = 'project'; // CH20 : CRI
    protected $usenotepad       = true;
 
    public $can_be_translated   = true;
@@ -70,9 +70,10 @@ class ProjectTask extends CommonDBChild {
 
 
    static function canView() {
-
-      return (Session::haveRightsOr('project', array(Project::READALL, Project::READMY))
-              || Session::haveRight(self::$rightname, ProjectTask::READMY));
+	// [INICIO] CH20 : CRI
+      return (Session::haveRightsOr(self::$rightname, array(Project::READALL, Project::READMY))
+              || Session::haveRight('projecttask', ProjectTask::READMY));
+	// [FIN]			  
    }
 
 
@@ -81,6 +82,7 @@ class ProjectTask extends CommonDBChild {
     *
     * @return boolean
    **/
+   // [INICIO] CH20 : CRI
    function canViewItem() {
 
       if (!Session::haveAccessToEntity($this->getEntityID())) {
@@ -88,37 +90,42 @@ class ProjectTask extends CommonDBChild {
       }
       $project = new Project();
       if ($project->getFromDB($this->fields['projects_id'])) {
-         return (Session::haveRight('project', Project::READALL)
-                 || (Session::haveRight('project', Project::READMY)
+         return (Session::haveRight(self::$rightname, Project::READALL)
+                 || (Session::haveRight(self::$rightname, Project::READMY)
                      && (($project->fields["users_id"] === Session::getLoginUserID())
                          || $project->isInTheManagerGroup()
                          || $project->isInTheTeam()))
-                 || (Session::haveRight(self::$rightname, self::READMY)
+                 || (Session::haveRight('projecttask', ProjectTask::READMY)
                      && (($this->fields["users_id"] === Session::getLoginUserID())
                          || $this->isInTheTeam())));
       }
       return false;
    }
+   // [FIN]
 
 
    static function canCreate() {
-      return (Session::haveRight('project', UPDATE));
+      //return (Session::haveRight('project', UPDATE));//[INICIO] CH20 11/09/2017
+	  return (Session::haveRight('projecttask', self::UPDATEMY));
    }
 
-
+	//[INICIO] CH20
    static function canUpdate() {
-
+	
       return (parent::canUpdate()
-              || Session::haveRight(self::$rightname, self::UPDATEMY));
+              || Session::haveRight('projecttask', self::UPDATEMY));
    }
-
+   //[FIN] CH20
 
    /**
     * Is the current user have right to edit the current task ?
     *
     * @return boolean
    **/
-   function canUpdateItem() {
+
+   //[INICIO] CH20 : Añadir funcion canUpdateItem comprueba permiso 11/09/2017
+   /*
+      function canUpdateItem() {
 
       if (!Session::haveAccessToEntity($this->getEntityID())) {
          return false;
@@ -131,10 +138,72 @@ class ProjectTask extends CommonDBChild {
                          || $this->isInTheTeam())));
       }
       return false;
+   }*/
+   function canUpdateItem() {
+	   
+		if ($_SESSION['glpiactiveprofile']['id'] == 4)
+		{
+			return true;
+		}
+	   
+      if (!Session::haveAccessToEntity($this->getEntityID())) {
+         return false;
+      }
+	  
+      $project = new Project();
+      if ($project->getFromDB($this->fields['projects_id'])) {
+		  $cond1= Session::haveAccessToEntity($this->getEntityID());
+		  //$cond2= Session::haveRight(self::$rightname, self::READALL);
+		  $cond2= Session::haveRight(self::$rightname, UPDATE);
+		  $soyDirectorProyecto = $project->fields["users_id"] === Session::getLoginUserID();
+		  $pertenezcoAlGrupoGestorDelProyecto = $project->isInTheManagerGroup();
+		  $soymiembrodelequipo=$project->isInTheTeam();
+		 //echo "cond1=".$cond1." cond2=".$cond2." "."soyDirectorProyecto=".$soyDirectorProyecto." "."pertenezcoAlGrupoGestorDelProyecto=".$pertenezcoAlGrupoGestorDelProyecto." "."soymiembrodelequipo=".$soymiembrodelequipo." ";
+				  
+         return (Session::haveRightsOr(self::$rightname, array(UPDATE)) &&
+					 ($project->fields["users_id"] === Session::getLoginUserID()
+                         || $project->isInTheManagerGroup()
+						 || $project->isInTheTeam()
+						 || $this->isInTheTeam()));	
+						 
+      }
+	  
+      return false;
    }
+	//[FINAL] CH20 : Añadir funcion canUpdateItem comprueba permiso 11/09/2017
 
+   //[INICIO] CH20 : Añadir funcion canCreateItem comprueba permiso 11/09/2017   
+   function canCreateItem() {
+		if ($_SESSION['glpiactiveprofile']['id'] == 4)
+		{
+			return true;
+		}	   
 
-
+      if (!Session::haveAccessToEntity($this->getEntityID())) {
+         return false;
+      }
+	  
+      $project = new Project();
+      if ($project->getFromDB($this->fields['projects_id'])) {
+		  $cond1= Session::haveAccessToEntity($this->getEntityID());
+		  //$cond2= Session::haveRight(self::$rightname, self::READALL);
+		  $cond2= Session::haveRight(self::$rightname, UPDATE);
+		  $soyDirectorProyecto = $project->fields["users_id"] === Session::getLoginUserID();
+		  $pertenezcoAlGrupoGestorDelProyecto = $project->isInTheManagerGroup();
+		  $soymiembrodelequipo=$project->isInTheTeam();
+		 //echo "cond1=".$cond1." cond2=".$cond2." "."soyDirectorProyecto=".$soyDirectorProyecto." "."pertenezcoAlGrupoGestorDelProyecto=".$pertenezcoAlGrupoGestorDelProyecto." "."soymiembrodelequipo=".$soymiembrodelequipo." ";
+				  	  
+         return (Session::haveRightsOr(self::$rightname, array(UPDATE)) &&
+					 ($project->fields["users_id"] === Session::getLoginUserID()
+                         || $project->isInTheManagerGroup()
+						 || $project->isInTheTeam()));	
+						 
+      }	  
+      return false;
+   }   
+	//[INICIO] CH20 : Añadir funcion canCreateItem comprueba permiso 11/09/2017
+	
+  
    function cleanDBonPurge() {
       global $DB;
 
@@ -152,10 +221,11 @@ class ProjectTask extends CommonDBChild {
     * @see commonDBTM::getRights()
     **/
    function getRights($interface='central') {
-
-      $values = parent::getRights();
-      unset($values[READ], $values[CREATE], $values[UPDATE], $values[DELETE], $values[PURGE]);
-
+	// [INICIO] CH20 : Comentar
+      //$values = parent::getRights();
+      //unset($values[READ], $values[CREATE], $values[UPDATE], $values[DELETE], $values[PURGE]);
+	  $values = array();
+	  // [FINAL] CH20 : Comentar
       $values[self::READMY]   = __('See (actor)');
       $values[self::UPDATEMY] = __('Update (actor)');
 
@@ -411,7 +481,10 @@ class ProjectTask extends CommonDBChild {
 
       echo "<tr class='tab_bg_1'><td>".__('Name')."</td>";
       echo "<td colspan='3'>";
-      Html::autocompletionTextField($this,"name", array('size' => 80));
+	  //CH6318 [INICIO] Cambio de Posicion texto nombre	  
+      //Html::autocompletionTextField($this,"name", array('size' => 80));
+	  echo "<input id='name' type='text' name='name' value=\"".$this->fields['name']."\" class='autocompletion-text-field' size='90'>";
+	  //CH6318 [FINAL]
       echo "</td></tr>\n";
 
       echo "<tr class='tab_bg_1'>";
@@ -475,6 +548,20 @@ class ProjectTask extends CommonDBChild {
       echo "<td>".__('Planned duration')."</td>";
       echo "<td>";
 
+	//CH6318 [INICIO] Desplegable duracion igual que tares tickets  
+      $toadd = [];
+      for ($i=9; $i<=100; $i++) {
+         $toadd[] = $i*HOUR_TIMESTAMP;
+      }
+	  $rand_time     = mt_rand();
+      Dropdown::showTimeStamp("planned_duration", ['min'             => 0,
+                                                  'max'             => 8*HOUR_TIMESTAMP,
+                                                  'value'           => $this->fields["planned_duration"],
+                                                  'rand'            => $rand_time,
+                                                  'addfirstminutes' => true,
+                                                  'inhours'         => true,
+                                                  'toadd'           => $toadd]);	
+	/*
       Dropdown::showTimeStamp("planned_duration",
                               array('min'             => 0,
                                     'max'             => 100*HOUR_TIMESTAMP,
@@ -482,9 +569,25 @@ class ProjectTask extends CommonDBChild {
                                     'value'           => $this->fields["planned_duration"],
                                     'addfirstminutes' => true,
                                     'inhours'         => true));
+	*/
+	//CH6318 [FINAL]
       echo "</td>";
       echo "<td>".__('Effective duration')."</td>";
       echo "<td>";
+	//CH6318 [INICIO] Desplegable duracion igual que tares tickets  
+      $toadd = [];
+      for ($i=9; $i<=100; $i++) {
+         $toadd[] = $i*HOUR_TIMESTAMP;
+      }
+	  $rand_time     = mt_rand();
+      Dropdown::showTimeStamp("effective_duration", ['min'             => 0,
+                                                  'max'             => 8*HOUR_TIMESTAMP,
+                                                  'value'           => $this->fields["effective_duration"],
+                                                  'rand'            => $rand_time,
+                                                  'addfirstminutes' => true,
+                                                  'inhours'         => true,
+                                                  'toadd'           => $toadd]);
+	/*
       Dropdown::showTimeStamp("effective_duration",
                               array('min'             => 0,
                                     'max'             => 100*HOUR_TIMESTAMP,
@@ -492,6 +595,9 @@ class ProjectTask extends CommonDBChild {
                                     'value'           => $this->fields["effective_duration"],
                                     'addfirstminutes' => true,
                                     'inhours'         => true));
+	*/
+	//CH6318 [FINAL]
+	
       if ($ID) {
          $ticket_duration = ProjectTask_Ticket::getTicketsTotalActionTime($this->getID());
          echo "<br>";
@@ -733,6 +839,75 @@ class ProjectTask extends CommonDBChild {
       $tab[86]['name']              = __('Child entities');
       $tab[86]['datatype']          = 'bool';
 
+	  //CH5217 : [INICIO] olb26s Incorporar filtros pars equipo de proyecto 13/09/2017
+      $tab['actors']                = __('Participantes');	
+
+	
+      $tab[98]['table']             = 'glpi_users';
+      $tab[98]['field']             = 'name';
+      $tab[98]['name']              = __('Usuario equipo de proyecto');
+      $tab[98]['datatype']          = 'dropdown';
+	  $tab[98]['linkfield']         = 'items_id';	
+      $tab[98]['right']               = 'all';	  
+      $tab[98]['joinparams']        = array('beforejoin'
+                                             => array(array('table'
+                                                         => 'glpi_projects',
+                                                      'joinparams'
+                                                         => array('jointype' => 'child'),
+													),
+													array('table'
+                                                         => 'glpi_projectteams',
+                                                      'joinparams'
+                                                         => array('jointype' => 'child'),
+													)
+												),
+											 'condition' => "AND glpi_projectteams.itemtype='User'");	
+
+      $tab[99]['table']             = 'glpi_groups';
+      $tab[99]['field']             = 'name';
+      $tab[99]['name']              = __('Grupo de equipo proyecto');
+      $tab[99]['datatype']          = 'dropdown';
+	  $tab[99]['linkfield']         = 'items_id';	  
+      $tab[99]['joinparams']        = array('beforejoin'
+                                             => array(array('table'
+                                                         => 'glpi_projects',
+                                                      'joinparams'
+                                                         => array('jointype' => 'child'),
+													),
+													array('table'
+                                                         => 'glpi_projectteams',
+                                                      'joinparams'
+                                                         => array('jointype' => 'child'),
+													)
+												),
+											 'condition' => "AND glpi_projectteams.itemtype='Group'");	
+	  
+      $tab[100]['table']             = 'glpi_users';
+      $tab[100]['field']             = 'name';
+      $tab[100]['name']              = __('Usuario equipo de tarea');
+      $tab[100]['datatype']          = 'dropdown';
+	  $tab[100]['linkfield']         = 'items_id';	
+      $tab[100]['right']               = 'all';	  
+      $tab[100]['joinparams']        = array('beforejoin'
+                                             => array('table'
+                                                         => 'glpi_projecttaskteams',
+                                                      'joinparams'
+                                                         => array('jointype' => 'child')),
+											'condition' => "AND glpi_projecttaskteams.itemtype='User'");
+														 
+      $tab[101]['table']             = 'glpi_groups';
+      $tab[101]['field']             = 'name';
+      $tab[101]['name']              = __('Grupo de equipo de tarea');
+      $tab[101]['datatype']          = 'dropdown';
+	  $tab[101]['linkfield']         = 'items_id';	  
+      $tab[101]['joinparams']        = array('beforejoin'
+                                             => array('table'
+                                                         => 'glpi_projecttaskteams',
+                                                      'joinparams'
+                                                         => array('jointype' => 'child')),
+											'condition' => "AND glpi_projecttaskteams.itemtype='Group'");															 
+	  
+		//[FINAL]
       $tab += Notepad::getSearchOptionsToAdd();
 
       return $tab;
@@ -755,6 +930,39 @@ class ProjectTask extends CommonDBChild {
          return false;
       }
 
+	 //[INICIO] CH20 : Comprobar si tarea viene de proyecto o de tarea 11/09/2017
+	 
+	  $canCreateItem = false;
+      $canedit = false;
+      if ($item->getType() =='Project') {
+		$project = new Project();
+		if ($project->getFromDB($ID)) {
+			 $canCreateItem = ($project->fields["users_id"] === Session::getLoginUserID()
+								|| $project->isInTheManagerGroup()
+								|| $project->isInTheTeam()
+								);
+		}
+		//echo "vengo de proyecto:". $ID."y mi permiso:".$canCreateItem;	
+	  }
+      if ($item->getType() =='ProjectTask') {
+		  
+		$projectask = new ProjectTask();
+		if ($projectask->getFromDB($ID)) {
+			$project = new Project();
+			
+			if ($project->getFromDB($projectask->fields["projects_id"])) {
+			//$ID = $project->fields['id'];				
+			 $canCreateItem = ($project->fields["users_id"] === Session::getLoginUserID()
+								|| $project->isInTheManagerGroup()
+								|| $project->isInTheTeam()
+								|| $projectask->isInTheTeam()
+								);			
+			}
+		}
+		//echo "vengo de proyecto:". $ID."y mi permiso:".$canCreateItem;		
+	  }		  
+	  //[FINAL] CH20 : Comprobar si tarea viene de proyecto o de tarea 11/09/2017
+	  
       $columns = array('name'             => self::getTypeName(Session::getPluralNumber()),
                        'tname'            => __('Type'),
                        'sname'            => __('Status'),
@@ -782,7 +990,8 @@ class ProjectTask extends CommonDBChild {
       }
 
       $canedit = false;
-      if ($item->getType() =='Project') {
+      //if ($item->getType() =='Project') {
+	  if ($item->getType() =='Project' || $item->getType() =='ProjectTask') { // [CH20]	11/09/2017
          $canedit = $item->canEdit($ID);
       }
 
@@ -801,13 +1010,38 @@ class ProjectTask extends CommonDBChild {
 
       echo "<div class='spaced'>";
 
+	  // [INICIO] CH20 Enlace personalizado al boton de añadir tarea 11/09/2017
+      //if ($canedit) {
+	  if ($canedit && $canCreateItem) { 
 
-      if ($canedit) {
-         echo "<div class='center firstbloc'>";
+		  switch ($item->getType()) {
+			 case 'Project' :
+				$url = "projecttask.form.php?projects_id=$ID";
+				break;
+
+			 case 'ProjectTask' :
+			 	$projectask = new ProjectTask();
+				if ($projectask->getFromDB($ID)) {
+					$IDProj = $projectask->fields["projects_id"];
+				}
+
+				$url = "projecttask.form.php?projects_id=$IDProj";
+				break;
+
+			 default : // Not available type
+				return;
+		  }	
+	  
+         /*echo "<div class='center firstbloc'>";
          echo "<a class='vsubmit' href='projecttask.form.php?projects_id=$ID'>".
+                _x('button', 'Add a task')."</a>";
+         echo "</div>";*/
+		 echo "<div class='center firstbloc'>";
+         echo "<a class='vsubmit' href='".$url."'>". 
                 _x('button', 'Add a task')."</a>";
          echo "</div>";
       }
+	  // [FINAL] CH20
 
       if (($item->getType() == 'ProjectTask')
           && $item->can($ID, UPDATE)) {
@@ -1027,9 +1261,9 @@ class ProjectTask extends CommonDBChild {
       if ($canedit && $nb) {
          Html::openMassiveActionsForm('mass'.__CLASS__.$rand);
          $massiveactionparams = array('num_displayed' => min($_SESSION['glpilist_limit'], $nb),
-                                      'container'     => 'mass'.__CLASS__.$rand);
-//                     'specific_actions'
-//                         => array('delete' => _x('button', 'Delete permanently')) );
+                                      'container'     => 'mass'.__CLASS__.$rand, // CH20 Descomentar Delete permanently
+                     'specific_actions'
+                         => array('delete' => _x('button', 'Delete permanently')) );
 //
 //          if ($this->fields['users_id'] != Session::getLoginUserID()) {
 //             $massiveactionparams['confirm']

@@ -465,9 +465,21 @@ class Bookmark extends CommonDBTM {
       global $CFG_GLPI;
 
       if ($params = $this->getParameters($ID)) {
-         $url  = $CFG_GLPI['root_doc']."/".rawurldecode($this->fields["path"]);
-         $url .= "?".Toolbox::append_params($params);
+		  
+//[INICIO] JMZ18G - 12/02/2019 - Error al cargar Marcador de la Base de datos del conocimiento. 
+if ((isset($params["_target"])) and (count(explode("knowbaseitem.php",$params["_target"]))>1)) {
 
+        $url  = rawurldecode($params["_target"]."?forcetab=".$params["_glpi_tab"]);
+		unset($params["_target"],$params["_itemtype"],$params["_glpi_tab"],$params["search"],$params["id"],$params["itemtype"]);
+        $url .= "&".Toolbox::append_params($params);
+		
+} else { //[FINAL] JMZ18G - 12/02/2019 - Marcadores no se pueden cargar cuando son de base de conocimiento. 
+
+        $url  = $CFG_GLPI['root_doc']."/".rawurldecode($this->fields["path"]);
+        $url .= "?".Toolbox::append_params($params);
+
+}	
+					 
          if ($opener) {
             echo "<script type='text/javascript' >\n";
             echo "window.parent.location.href='$url';";
@@ -491,7 +503,8 @@ class Bookmark extends CommonDBTM {
 
       if ($this->getFromDB($ID)) {
          $query_tab = array();
-         parse_str($this->fields["query"], $query_tab);
+         parse_str($this->fields["query"], $query_tab);				
+		 
          return $this->prepareQueryToUse($this->fields["type"], $query_tab);
       }
       return false;

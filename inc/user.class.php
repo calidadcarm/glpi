@@ -1406,6 +1406,9 @@ class User extends CommonDBTM {
          $this->fields['password'] = "";
 
          $fields  = AuthLDAP::getSyncFields($ldap_method);
+         //[INICIO] CH06 Gobierno TI 11/09/2017
+		 $fields["is_active"] = "carmactivo";
+ 		 //[FIN]		 
 
          //Hook to allow plugin to request more attributes from ldap
          $fields = Plugin::doHookFunction("retrieve_more_field_from_ldap", $fields);
@@ -1444,7 +1447,16 @@ class User extends CommonDBTM {
                   case 'locations_id' :
                      $this->fields[$k] = 0;
                      break;
-
+                  //[INICIO] CH06 Gobierno TI 11/09/2017
+				  case "is_active" :
+				     if ($v[0][$e][0]=='A'){
+                        $this->fields[is_active] = 1;
+					 }else{
+						$this->fields[is_active] = 0;
+                     }					 
+					 break;
+				  //[FIN]
+					 
                   default :
                      $this->fields[$k] = "";
                }
@@ -1474,6 +1486,15 @@ class User extends CommonDBTM {
                      }
                      break;
 
+                  //[INICIO] CH06 Gobierno TI 11/09/2017
+				  case "is_active" :
+                     if ($v[0][$e][0]=='A'){
+                        $this->fields[$k] = 1;
+					 }else{
+						$this->fields[$k] = 0;
+                     }
+                     break;
+				  //[FIN]					 
                   case "usertitles_id" :
                      $this->fields[$k] = Dropdown::importExternal('UserTitle', $val);
                      break;
@@ -3177,6 +3198,13 @@ class User extends CommonDBTM {
          $query .= " WHERE $where ";
       } else {
          if ((strlen($search) > 0)) {
+			 //[INICIO] CH46 Modificar busqueda de desplegable de usuario para no buscar por campos como phone y email nueva funcion makeTextSearchlogin 13/09/2017
+            $where .= " AND (`glpi_users`.`name` ".Search::makeTextSearchlogin($search)."
+                             OR `glpi_users`.`realname` ".Search::makeTextSearch($search)."
+                             OR `glpi_users`.`firstname` ".Search::makeTextSearch($search)."
+                             OR CONCAT(`glpi_users`.`realname`,' ',`glpi_users`.`firstname`) ".
+                                       Search::makeTextSearch($search).")";		 
+			 /*			 
             $where .= " AND (`glpi_users`.`name` ".Search::makeTextSearch($search)."
                              OR `glpi_users`.`realname` ".Search::makeTextSearch($search)."
                              OR `glpi_users`.`firstname` ".Search::makeTextSearch($search)."
@@ -3186,6 +3214,8 @@ class User extends CommonDBTM {
                                        `glpi_users`.`firstname`,' ',
                                        `glpi_users`.`firstname`) ".
                                        Search::makeTextSearch($search).")";
+									   */
+			//[FINAL]									   
          }
          $query .= " WHERE $where ";
 

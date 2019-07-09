@@ -51,13 +51,40 @@ if (!isset($_GET["modify"])) {
 }
 
 
+
 $kb = new KnowbaseItem();
+
+
+// [INICIO] CH44 Procesar texto enriquecido para texto plano en nuevo campo "content". 13/09/2017
+if (isset($_POST['answer']))
+{
+      $content = Html::entity_decode_deep($_POST['answer']);
+      // If is html content
+      if ($content != strip_tags($content)) {
+		 $ticket = new Ticket();
+         $content = Html::clean($ticket->convertImageToTag($content));
+      }
+	  $_POST['content'] = $content;
+}
+// [FINAL] CH44
 
 if (isset($_POST["add"])) {
    // ajoute un item dans la base de connaisssances
    $kb->check(-1, CREATE,$_POST);
    $newID = $kb->add($_POST);
-   Event::log($newID, "knowbaseitem", 5, "tools",
+   
+   // CARM - emb97m - Error conocido
+    if ($kb->checkConocimiento() == true){
+			$query = "INSERT INTO glpi_plugin_conocimiento_conocimientos
+					  (knowbaseitems_id, error_conocido, users_id, knowbaseitemcategories_id, date_mod) 
+					  VALUES ('".$newID."','".$_POST['error_conocido']."','".$_POST['users_id']."',
+					  '".$_POST['knowbaseitemcategories_id']."',
+					  '".date('Y-m-d H:i:s')."');";
+			$result = $DB->query($query);
+	}
+	// Fin CARM
+	
+    Event::log($newID, "knowbaseitem", 5, "tools",
               sprintf(__('%1$s adds the item %2$s'), $_SESSION["glpiname"], $newID));
    if (isset($_POST['_in_modal']) && $_POST['_in_modal']) {
       Html::redirect($CFG_GLPI["root_doc"]."/front/knowbaseitem.form.php?id=$newID&_in_modal=1");
@@ -70,6 +97,18 @@ if (isset($_POST["add"])) {
    $kb->check($_POST["id"], UPDATE);
 
    $kb->update($_POST);
+   
+    // INFORGES - emb97m - Error conocido
+    if ($kb->checkConocimiento() == true){
+			$query = "UPDATE glpi_plugin_conocimiento_conocimientos
+					  SET error_conocido = '".$_POST['error_conocido']."', date_mod ='".date('Y-m-d H:i:s')."' ,
+			          users_id =".$_POST['users_id'].", knowbaseitemcategories_id =".$_POST['knowbaseitemcategories_id']."
+					  WHERE knowbaseitems_id='".$_POST["id"]."';";
+
+			$result = $DB->query($query);
+	}
+	// Fin INFORGES
+	
    Event::log($_POST["id"], "knowbaseitem", 5, "tools",
               //TRANS: %s is the user login
               sprintf(__('%s updates an item'), $_SESSION["glpiname"]));
@@ -78,7 +117,17 @@ if (isset($_POST["add"])) {
 } else if (isset($_POST["purge"])) {
    // effacer un item dans la base de connaissances
    $kb->check($_POST["id"], PURGE);
-   $kb->delete($_POST, 1);
+   $kb->delete($_POST, 1); 
+   
+    // INFORGES - jmz18g - Error conocido
+    if ($kb->checkConocimiento() == true){
+			$query = "DELETE from glpi_plugin_conocimiento_conocimientos
+					  WHERE knowbaseitems_id='".$_POST["id"]."';";
+
+			$result = $DB->query($query);
+	}
+	// Fin INFORGES   
+   
    Event::log($_POST["id"], "knowbaseitem", 5, "tools",
               //TRANS: %s is the user login
               sprintf(__('%s purges an item'), $_SESSION["glpiname"]));
@@ -146,10 +195,13 @@ if (isset($_POST["add"])) {
       } else {
          $_SESSION["glpilanguage"] = $CFG_GLPI['language'];
          // Anonymous FAQ
-         Html::simpleHeader(__('FAQ'),
-                            array(__('Authentication')
-                                            => $CFG_GLPI['root_doc'].'/',
-                                  __('FAQ') => $CFG_GLPI['root_doc'].'/front/helpdesk.faq.php'));
+		 //[INICIO] CH47 comentar cabecera si es anonymous permitir ver. 13/09/2017
+         //Html::simpleHeader(__('FAQ'),
+         //                   array(__('Authentication')
+         //                                   => $CFG_GLPI['root_doc'].'/',
+         //                         __('FAQ') => $CFG_GLPI['root_doc'].'/front/helpdesk.faq.php'));
+		 Html::includeHeader(__('FAQ'));
+		//[FINAL]		 
       }
 
       $available_options = array('item_itemtype', 'item_items_id', 'id');
@@ -168,7 +220,9 @@ if (isset($_POST["add"])) {
             Html::helpFooter();
          }
       } else {
-         Html::helpFooter();
+		   //[INICIO] CH47 comentar pie si es anonymous permitir ver. 13/09/2017
+        // Html::helpFooter();
+		  //[FINAL] CH47 comentar pie si es anonymous permitir ver.
       }
    }
 }

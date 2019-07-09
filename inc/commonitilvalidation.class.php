@@ -428,10 +428,15 @@ abstract class CommonITILValidation  extends CommonDBChild {
     * @return an array
    **/
    static function getAllStatusArray($withmetaforsearch=false, $global=false) {
-
-      $tab = array(self::WAITING  => __('Waiting for approval'),
+	 //[INICIO] CH41 Modificar array añadir la opcion por defecto self::NONE 13/09/2017
+      /*$tab = array(self::WAITING  => __('Waiting for approval'),
                    self::REFUSED  => __('Refused'),
-                   self::ACCEPTED => __('Granted'));
+                   self::ACCEPTED => __('Granted'));*/
+      $tab = array(self::NONE	  => __('Not subject to approval'),
+				   self::WAITING  => __('Waiting for approval'),
+                   self::REFUSED  => __('Refused'),
+                   self::ACCEPTED => __('Granted'));	
+	//[FINAL] 	
       if ($global) {
          $tab[self::NONE] = __('Not subject to approval');
 

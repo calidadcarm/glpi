@@ -550,6 +550,39 @@ class TicketFollowup  extends CommonDBTM {
    **/
    static function showFormMassiveAction() {
 
+		// [INICIO] CH45 Gobierno TI: Incluir seleccionable tipo en seguimiento y private olb26s 13/09/2017
+      //echo "<div class='spaced' id='tabsbody'>";
+      echo "<table class='tab_format'>";
+         echo "<tr class='tab_bg_1'>";
+         echo "<td>".__('Source of followup')."</td><td>";
+         RequestType::dropdown(array('value' => RequestType::getDefault('helpdesk')));
+         echo "</td></tr>\n";	
+
+         echo "<tr class='tab_bg_1'>";
+         echo "<td>".__('Followup type')."</td><td>";
+         FollowupType::dropdown(array('value' => FollowupType::getDefault('helpdesk')));
+         echo "</td></tr>\n";	 
+
+         echo "<tr class='tab_bg_1'>";
+         echo "<td>".__('Private')."</td><td>";
+         Dropdown::showYesNo('is_private');
+         echo "</td></tr>\n";	
+		 
+		 
+         echo "<tr class='tab_bg_1'>";
+         echo "<td>".__('Description')."</td><td>";
+         echo "<textarea name='content' cols='50' rows='6'></textarea>&nbsp;";
+         echo "</td></tr>\n";	
+		 
+         echo "<tr class='tab_bg_1'>";
+         echo "<td colspan=2>";
+		 echo "<input type='submit' name='add' value=\""._sx('button', 'Add')."\" class='submit'>";
+         echo "</td></tr>\n";			 
+		 
+	  echo "</table>";
+	  //echo "</div>";
+
+	 /*   
       echo "&nbsp;".__('Source of followup')."&nbsp;";
       RequestType::dropdown(array('value' => RequestType::getDefault('followup'), 'condition' => 'is_active = 1 AND is_ticketfollowup = 1'));
 
@@ -558,6 +591,8 @@ class TicketFollowup  extends CommonDBTM {
 
       echo "<input type='hidden' name='is_private' value='".$_SESSION['glpifollowup_private']."'>";
       echo "<input type='submit' name='add' value=\""._sx('button', 'Add')."\" class='submit'>";
+	  	  */
+	  // [FINAL] 		  
    }
 
 
@@ -667,10 +702,13 @@ class TicketFollowup  extends CommonDBTM {
          $rand = mt_rand();
 
          echo "<tr class='tab_bg_1'>";
-         echo "<td rowspan='3'>".__('Description')."</td>";
-         echo "<td rowspan='3' style='width:60%'>";
+         echo "<td rowspan='4'>".__('Description')."</td>"; //CH11 Gobierno TI: Cambiar rowspan de 3 a 4 13/09/2017
+         echo "<td rowspan='4' style='width:60%'>"; //CH11 Gobierno TI: Cambiar rowspan de 3 a 4 13/09/2017
+		 //[INICIO] CH5417 para convertir todas las entidades HTML a sus caracteres correspondientes 13/09/2017
+		 $contenttxt = html_entity_decode($this->fields["content"],ENT_NOQUOTES,"UTF-8");
+		 //[FIN]		 
          echo "<textarea id='content$rand' name='content' style='width: 95%; height: 120px'>";
-         echo $this->fields["content"];
+		 echo $contenttxt; // CH5417  Replace contenttxt por $this->fields["content"]
          echo "</textarea>";
          echo Html::scriptBlock("$(document).ready(function() { $('#content$rand').autogrow(); });");
          if ($this->fields["date"]) {
@@ -692,6 +730,13 @@ class TicketFollowup  extends CommonDBTM {
          echo "<td>".__('Source of followup')."</td><td>";
          RequestType::dropdown(array('value' => $this->fields["requesttypes_id"], 'condition' => 'is_active =1 AND is_ticketfollowup = 1'));
          echo "</td></tr>\n";
+
+		// [INICIO] CH11 Gobierno TI: Incluir tipo en seguimiento olb26s 19/11/2015
+         echo "<tr class='tab_bg_1'>";
+         echo "<td>".__('Followup type')."&nbsp;:</td><td>";
+         Dropdown::show('FollowupType', array('value' => $this->fields["followuptypes_id"]));
+         echo "</td></tr>\n";		 
+		// [FINAL] 		 
 
          echo "<tr class='tab_bg_1'>";
          echo "<td>".__('Private')."</td><td>";
@@ -716,6 +761,12 @@ class TicketFollowup  extends CommonDBTM {
          echo "<input type='hidden' name='tickets_id' value='".$this->fields["tickets_id"]."'>";
          echo "<input type='hidden' name='requesttypes_id' value='".
                 RequestType::getDefault('followup')."'>";
+				
+		// [INICIO] CH11 Gobierno TI: Incluir tipo en seguimiento olb26s  11/09/2017
+         echo "<input type='hidden' name='followuptypes_id' value='".
+                FollowupType::getDefault('helpdesk')."'>";		
+		// [FINAL]
+		
          // Reopen case
          if ($reopen_case) {
             echo "<input type='hidden' name='add_reopen' value='1'>";
@@ -976,6 +1027,14 @@ class TicketFollowup  extends CommonDBTM {
                          Dropdown::getDropdownName('glpi_requesttypes',
                                                    $data['requesttypes_id']));
             }
+			// [INICIO] CH11 Gobierno TI: Incluir tipo en seguimiento olb26s  11/09/2017
+            if ($data['followuptypes_id']) {
+               $name = sprintf(__('%1$s - %2$s'), $name,
+                         Dropdown::getDropdownName('glpi_followuptypes',
+                                                   $data['followuptypes_id']));
+            }			
+			//[FIN]			
+			
             if ($showprivate && $data["is_private"]) {
                $name = sprintf(__('%1$s - %2$s'), $name, __('Private'));
             }
@@ -989,7 +1048,10 @@ class TicketFollowup  extends CommonDBTM {
                         Html::jsShow("viewfollowup" . $ticket->fields['id'].$data["id"]."$rand")."\" ";
             }
             echo ">";
-            $content = nl2br($data['content']);
+			//[INICIO] CH5417 html_entity_decode($a) 13/09/2017
+			//$content = nl2br($data['content']);
+            $content = nl2br(html_entity_decode($data['content'],ENT_NOQUOTES,"UTF-8"));
+			//[FIN] CH5417
             if (empty($content)) $content = NOT_AVAILABLE;
             echo $content.'</div>'; // boxnotetext
 
@@ -1145,6 +1207,15 @@ class TicketFollowup  extends CommonDBTM {
       $tab[5]['name']         = __('User');
       $tab[5]['datatype']     = 'dropdown';
       $tab[5]['right']        = 'all';
+
+		// [INICIO] CH11 Gobierno TI: Incluir tipo en seguimiento olb26s 11/09/2017
+      $tab[6]['table']        = 'glpi_followuptypes';
+      $tab[6]['field']        = 'name';
+      $tab[6]['name']         = __('Followup type');
+	  $tab[6]['datatype']     = 'dropdown';
+	  $tab[6]['right']        = 'all';
+      //$tab[6]['forcegroupby'] = true;
+		// [FIN] 	  
 
 
       return $tab;

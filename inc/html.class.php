@@ -331,7 +331,10 @@ class Html {
       switch ($_SESSION['glpinumber_format']) {
          case 0 : // French
             return str_replace(' ', '&nbsp;', number_format($number, $decimal, '.', ' '));
-
+		 //[INICIO] CH08 Gobierno TI: 11/09/2017	
+         case 1 : // Spanish
+            return str_replace(' ', '&nbsp;', number_format($number, $decimal, ',', '.'));				
+		 //[FIN]
          case 2 : // Other French
             return str_replace(' ', '&nbsp;', number_format($number, $decimal, ',', ' '));
 
@@ -1116,10 +1119,17 @@ class Html {
       echo "<meta http-equiv='Content-Type' content='text/html; charset=utf-8'>";
 
       // Send extra expires header
-      echo "<meta http-equiv='Expires' content='Fri, Jun 12 1981 08:20:00 GMT'>\n";
+	  //[INICIO] CH5817 Cambio para No-Cache
+      //echo "<meta http-equiv='Expires' content='Fri, Jun 12 1981 08:20:00 GMT'>\n";
+      //echo "<meta http-equiv='Pragma' content='no-cache'>\n";
+      //echo "<meta http-equiv='Cache-Control' content='no-cache'>\n";
+      //echo "<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\n";
+      echo "<meta http-equiv='Expires' content='0'>\n";
+	  echo "<meta http-equiv='Last-Modified' content='0'>\n";
+      echo "<meta http-equiv='Cache-Control' content='no-cache, mustrevalidate'>\n";
       echo "<meta http-equiv='Pragma' content='no-cache'>\n";
-      echo "<meta http-equiv='Cache-Control' content='no-cache'>\n";
       echo "<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\n";
+	  //[FINAL]
 
       // auto desktop / mobile viewport
       echo "<meta name='viewport' content='width=device-width, initial-scale=1'>";
@@ -1515,7 +1525,7 @@ class Html {
 
       echo "<li id='deconnexion'>";
       echo "<a href='".$CFG_GLPI["root_doc"].
-                       "/front/logout.php?noAUTO=1' title=\"".__s('Logout')."\">";
+                       "/front/logout.php?noAuto=1 ' title=\"".__s('Logout')."\">";
       echo "<span id='logout_icon' title=\"".__s('Logout').
              "\"  alt=\"".__s('Logout')."\" class='button-icon'></span>";
       echo "</a>";
@@ -2089,8 +2099,18 @@ class Html {
 
       //  Create ticket
       if (Session::haveRight("ticket", CREATE)) {
+		  
+		 //[INICIO ]CH5617 : definir url creacion de un ticket o a pedidos si plugin catalogo activo.
+		 $url = '/front/helpdesk.public.php?create_ticket=1';
+		  $plug = new Plugin();
+		  if ($plug->isActivated("catalogo")) {
+			 $url = '/plugins/catalogo/front/inicio.php';
+		  }
+		 //[FIN]
+		  
          $menu['create_ticket']['id']      = "menu2";
-         $menu['create_ticket']['default'] = '/front/helpdesk.public.php?create_ticket=1';
+  	     $menu['create_ticket']['default'] = $url; //[INICIO] CH5617 se cambiar url de la original (abajo)
+		 //$menu['create_ticket']['default'] = '/front/helpdesk.public.php?create_ticket=1';
          $menu['create_ticket']['title']   = __s('Create a ticket');
          $menu['create_ticket']['content'] = array(true);
       }
@@ -3953,6 +3973,7 @@ class Html {
          return  Html::scriptBlock($js);
       }
    }
+     
 
    /**
     * Init the Image paste System for tiny mce
@@ -5104,6 +5125,8 @@ class Html {
    static function file($options=array()) {
       global $CFG_GLPI;
 
+	 // var_dump($options);
+	  
       $randupload             = mt_rand();
 
       $p['name']              = 'filename';
@@ -5115,13 +5138,14 @@ class Html {
       $p['dropZone']          = 'dropdoc'.$randupload;
       $p['rand']              = $randupload;
       $p['values']            = array();
+	  
 
       if (is_array($options) && count($options)) {
          foreach ($options as $key => $val) {
             $p[$key] = $val;
          }
       }
-
+	  
       $addshowfilecontainer = false;
       if (empty($p['showfilecontainer'])) {
          $addshowfilecontainer   = true;
@@ -5145,7 +5169,11 @@ class Html {
       $out .= "</div>";
 
       return $out;
+   
+   
    }
+    
+
 
    /**
     * imagePaste : Show image paste for an item, with TinyMce

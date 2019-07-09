@@ -425,30 +425,44 @@ class Change extends CommonITILObject {
       $tab[60]['name']          = __('Impact');
       $tab[60]['massiveaction'] = false;
       $tab[60]['datatype']      = 'text';
+	  $tab[60]['htmltext'] = true; //[CH16] CRI texto enriquecido 11/09/2017
 
       $tab[61]['table']         = $this->getTable();
       $tab[61]['field']         = 'controlistcontent';
       $tab[61]['name']          = __('Control list');
       $tab[61]['massiveaction'] = false;
       $tab[61]['datatype']      = 'text';
+	  $tab[61]['htmltext'] = true; //[CH16] CRI texto enriquecido 11/09/2017
 
       $tab[62]['table']         = $this->getTable();
       $tab[62]['field']         = 'rolloutplancontent';
       $tab[62]['name']          = __('Deployment plan');
       $tab[62]['massiveaction'] = false;
       $tab[62]['datatype']      = 'text';
+	  $tab[62]['htmltext'] = true; //[CH16] CRI texto enriquecido 11/09/2017
 
       $tab[63]['table']         = $this->getTable();
       $tab[63]['field']         = 'backoutplancontent';
       $tab[63]['name']          = __('Backup plan');
       $tab[63]['massiveaction'] = false;
       $tab[63]['datatype']      = 'text';
+	  $tab[63]['htmltext'] = true; //[CH16] CRI texto enriquecido 11/09/2017
 
       $tab[64]['table']         = $this->getTable();
       $tab[64]['field']         = 'checklistcontent';
       $tab[64]['name']          = __('Checklist');
       $tab[64]['massiveaction'] = false;
       $tab[64]['datatype']      = 'text';
+	  $tab[64]['htmltext'] = true; //[CH16] CRI texto enriquecido 11/09/2017
+	  
+	  //[INICIO] CH41 CRI Nuevo campo Plan de comunicacion 13/09/2017
+      $tab[67]['table']         = $this->getTable();
+      $tab[67]['field']         = 'communicationcontent';
+      $tab[67]['name']          = __('Communication plan');
+      $tab[67]['massiveaction'] = false;
+      $tab[67]['datatype']      = 'text';
+	  $tab[67]['htmltext'] = true; 
+	   //[FINAL]	  
 
       $tab += Notepad::getSearchOptionsToAdd();
 
@@ -767,7 +781,8 @@ class Change extends CommonITILObject {
              " value=\"".Html::cleanInputText($this->fields["name"])."\">";
       echo "</td>";
       echo "</tr>";
-
+	  // [INICIO] CH16 CRI Texto enriquecido en cambios	11/09/2017
+	  /*
       echo "<tr class='tab_bg_1'>";
       echo "<th>".__('Description')."</th>";
       echo "<td colspan='3'>";
@@ -776,6 +791,18 @@ class Change extends CommonITILObject {
             Html::clean(Html::entity_decode_deep($this->fields["content"]))."</textarea>";
       echo "</td>";
       echo "</tr>";
+	  */
+      echo "<tr class='tab_bg_1'>";
+      echo "<th>".__('Description')."</th><td colspan='3'>";
+
+         $rand = mt_rand();
+         Html::initEditorSystem("content$rand");
+
+         echo "<textarea id='content$rand' name='content' rows='12' cols='80'>".
+                $this->getField('content')."</textarea>";
+
+      echo "</td></tr>";
+	  // [FIN]	  
       $options['colspan'] = 3;
       $this->showFormButtons($options);
 
@@ -798,6 +825,8 @@ class Change extends CommonITILObject {
 
       echo "<tr class='tab_bg_2'>";
       echo "<td>".__('Impacts')."</td><td colspan='3'>";
+	  //[INICIO] CH16 CRI convertir a texto enriquecido
+	  /*	  
       if ($canedit) {
          echo "<textarea id='impactcontent' name='impactcontent' rows='6' cols='110'>";
          echo $this->getField('impactcontent');
@@ -805,10 +834,22 @@ class Change extends CommonITILObject {
       } else {
          echo $this->getField('impactcontent');
       }
+	  */
+      if ($canedit) {
+         $rand = mt_rand();
+         Html::initEditorSystem("impactcontent$rand");
+         echo "<textarea id='impactcontent$rand' name='impactcontent' rows='12' cols='80'>".
+                $this->getField('impactcontent')."</textarea>";
+      } else {
+         echo Toolbox::unclean_cross_side_scripting_deep($this->getField('impactcontent'));
+      }
+	  //[FINAL]	  
       echo "</td></tr>";
 
       echo "<tr class='tab_bg_2'>";
       echo "<td>".__('Control list')."</td><td colspan='3'>";
+	  //[INICIO] CH16 CRI convertir a texto enriquecido 11/09/2017
+	  /*	  
       if ($canedit) {
          echo "<textarea id='controlistcontent' name='controlistcontent' rows='6' cols='110'>";
          echo $this->getField('controlistcontent');
@@ -816,6 +857,24 @@ class Change extends CommonITILObject {
       } else {
          echo $this->getField('controlistcontent');
       }
+	  */
+		//[INICIO] CH41 añadir variable $dafaulttable para Tabla predeterminada campo Participantes antes Lista de Control 11/09/2017
+	  	$dafaulttable = '<table border="\&quot;1\&quot;" align="\&quot;left\&quot;" style="width: 550px; height: 70px;" 550px="" height:="" 52px=""><tbody><tr><td><strong>Id</strong></td><td><strong>Organización</strong></td><td><strong>Escalado</strong></td><td><strong>Función</strong></td><td><strong>Nombre</strong></td><td><strong>Teléfono Móvil</strong></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td></tr></tbody></table>';
+		$dafaulttable = htmlentities($dafaulttable, ENT_QUOTES);
+		if  ($this->getField('controlistcontent') != NULL)
+		{
+			$dafaulttable = $this->getField('controlistcontent');
+		}
+		//[FINAL]
+      if ($canedit) {
+         $rand = mt_rand();
+         Html::initEditorSystem("controlistcontent$rand");
+         echo "<textarea id='controlistcontent$rand' name='controlistcontent' rows='12' cols='80'>".
+                $dafaulttable."</textarea>"; // CH41 valor cambiar a $dafaulttable de $this->getField('controlistcontent') 11/09/2017
+      } else {
+         echo Toolbox::unclean_cross_side_scripting_deep($dafaulttable); //CH41 valor a $dafaulttable de $this->getField('controlistcontent') 11/09/2017
+      }	
+	  // [FIN]		  
       echo "</td></tr>";
 
       $options['candel']  = false;
@@ -838,6 +897,8 @@ class Change extends CommonITILObject {
 
       echo "<tr class='tab_bg_2'>";
       echo "<td>".__('Deployment plan')."</td><td colspan='3'>";
+	  //[INICIO] CH16 CRI convertir a texto enriquecido 11/09/2017
+	  /*	  
       if ($canedit) {
          echo "<textarea id='rolloutplancontent' name='rolloutplancontent' rows='6' cols='110'>";
          echo $this->getField('rolloutplancontent');
@@ -845,10 +906,22 @@ class Change extends CommonITILObject {
       } else {
          echo $this->getField('rolloutplancontent');
       }
+	  */
+      if ($canedit) {
+         $rand = mt_rand();
+         Html::initEditorSystem("rolloutplancontent$rand");
+         echo "<textarea id='rolloutplancontent$rand' name='rolloutplancontent' rows='12' cols='80'>".
+                $this->getField('rolloutplancontent')."</textarea>";
+      } else {
+         echo Toolbox::unclean_cross_side_scripting_deep($this->getField('rolloutplancontent'));
+      }	  
+	  //[FINAL]	  
       echo "</td></tr>";
 
       echo "<tr class='tab_bg_2'>";
       echo "<td>".__('Backup plan')."</td><td colspan='3'>";
+	  //[INICIO] CH16 CRI convertir a texto enriquecido 11/09/2017
+	  /*	  
       if ($canedit) {
          echo "<textarea id='backoutplancontent' name='backoutplancontent' rows='6' cols='110'>";
          echo $this->getField('backoutplancontent');
@@ -856,10 +929,22 @@ class Change extends CommonITILObject {
       } else {
          echo $this->getField('backoutplancontent');
       }
+	  */
+      if ($canedit) {
+         $rand = mt_rand();
+         Html::initEditorSystem("backoutplancontent$rand");
+         echo "<textarea id='backoutplancontent$rand' name='backoutplancontent' rows='12' cols='80'>".
+                $this->getField('backoutplancontent')."</textarea>";
+      } else {
+         echo Toolbox::unclean_cross_side_scripting_deep($this->getField('backoutplancontent'));
+      }	
+	  //[FINAL] 	  
       echo "</td></tr>";
 
       echo "<tr class='tab_bg_2'>";
       echo "<td>".__('Checklist')."</td><td colspan='3'>";
+	  //[INICIO] CH16 CRI convertir a texto enriquecido 11/09/2017
+	  /*	  
       if ($canedit) {
          echo "<textarea id='checklistcontent' name='checklistcontent' rows='6' cols='110'>";
          echo $this->getField('checklistcontent');
@@ -867,7 +952,31 @@ class Change extends CommonITILObject {
       } else {
          echo $this->getField('checklistcontent');
       }
+	  */
+      if ($canedit) {
+         $rand = mt_rand();
+         Html::initEditorSystem("checklistcontent$rand");
+         echo "<textarea id='checklistcontent$rand' name='checklistcontent' rows='12' cols='80'>".
+                $this->getField('checklistcontent')."</textarea>";
+      } else {
+         echo Toolbox::unclean_cross_side_scripting_deep($this->getField('checklistcontent'));
+      }	
+	  //[FINAL]		  
       echo "</td></tr>";
+	  
+	  //[INICIO] CH41 CRI Añadir plan de comunicación de cambios	13/09/2017  
+      echo "<tr class='tab_bg_2'>";
+      echo "<td>".__('Communication plan')."</td><td colspan='3'>";
+      if ($canedit) {
+         $rand = mt_rand();
+         Html::initEditorSystem("communicationcontent$rand");
+         echo "<textarea id='communicationcontent$rand' name='communicationcontent' rows='12' cols='80'>".
+                $this->getField('communicationcontent')."</textarea>";
+      } else {
+         echo Toolbox::unclean_cross_side_scripting_deep($this->getField('communicationcontent'));
+      }	
+      echo "</td></tr>";	
+	  //[FINAL]		  
 
       $options['candel']  = false;
       $options['canedit'] = $canedit;

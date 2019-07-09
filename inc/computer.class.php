@@ -111,6 +111,7 @@ class Computer extends CommonDBTM {
 
       $ong = array();
       $this->addDefaultFormTab($ong)
+		 ->addStandardTab('PluginRelationRelation', $ong, $options)
          ->addStandardTab(__CLASS__, $ong, $options)
          ->addStandardTab('Item_Devices', $ong, $options)
          ->addStandardTab('ComputerDisk', $ong, $options)

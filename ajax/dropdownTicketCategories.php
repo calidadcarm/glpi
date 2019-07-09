@@ -69,6 +69,14 @@ if ($_POST["type"]) {
             $opt['value'] = $_POST['value'];
          }
          break;
+		 //[INICIO] CH36 Gobierno TI: 13/09/2017
+		default:
+         $opt['condition'].= " (`is_incident`='1' or `is_request`='1') ";
+         if ($currentcateg->getField('is_request') == 1 || $currentcateg->getField('is_incident') == 1) {
+            $opt['value'] = $_POST['value'];
+         }
+         break;		
+		//[FINAL] CH36 Gobierno TI: 16/06/2015		 
    }
 }
 

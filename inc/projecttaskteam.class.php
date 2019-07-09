@@ -70,6 +70,30 @@ class ProjectTaskTeam extends CommonDBRelation {
       return 'id';
    }
 
+	//[INICIO] CH20 Agregar funcion canView
+   static function canView() {
+
+      return (Session::haveRightsOr(self::$rightname, array(Project::READALL, Project::READMY))
+              || Session::haveRight('projecttask', ProjectTask::READMY));
+   } 
+	static function canDelete() {
+		  return (Session::haveRightsOr(self::$rightname, array(Project::READALL, Project::READMY))
+				  || Session::haveRight('projecttask', ProjectTask::READMY));
+	}    
+   
+	//[FINAL] CH20 funcion canView
+	
+	//[INICIO] CH20 Agregar funcion canUpdateItem
+	function canUpdateItem() {
+	   
+		if ($_SESSION['glpiactiveprofile']['id'] == 4)
+		{
+			return true;
+		}
+	}
+ 	//[FINAL]  CH20 funcion canUpdateItem   
+
+
 
    static function getTypeName($nb=0) {
       return _n('Task team', 'Task teams', $nb);

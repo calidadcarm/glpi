@@ -1073,9 +1073,21 @@ class MailCollector  extends CommonDBTM {
          $try_options = array(array('DISABLE_AUTHENTICATOR' => 'GSSAPI'),
                               array('DISABLE_AUTHENTICATOR' => 'PLAIN'));
          foreach($try_options as $option) {
+			 
+			 
+	/*		 echo "<br>host ".$this->fields['host'];
+			 echo "<br>login ".$this->fields['login'];
+			 echo "<br>decrypt ". Toolbox::decrypt($this->fields['passwd'], GLPIKEY);
+			 echo "<br>CL_EXPUNGE ".CL_EXPUNGE;
+			 echo "<br>parametro ". 1;
+			 echo "<br>".var_dump($option);*/
+			 
             $this->marubox = @imap_open($this->fields['host'], $this->fields['login'],
                                         Toolbox::decrypt($this->fields['passwd'], GLPIKEY),
                                         CL_EXPUNGE, 1, $option);
+										
+										//exit();
+										
             if (is_resource($this->marubox)) {
                break;
             }
@@ -1320,8 +1332,13 @@ class MailCollector  extends CommonDBTM {
     * @return an integer (Total Mail)
    **/
    function getTotalMails() {//Get Total Number off Unread Email In Mailbox
+//echo "<br>". var_dump($this->marubox);
+
 
       $headers = imap_headers($this->marubox);
+	//  echo "<br>".var_dump($headers);
+	//  echo "<br><br>headers" .count($headers);
+	//  exit();
       return count($headers);
    }
 

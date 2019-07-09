@@ -86,6 +86,9 @@ class TicketValidation  extends CommonITILValidation {
               if ($ticket->fields['type'] == Ticket::DEMAND_TYPE) {
                  return Session::haveRight(self::$rightname, self::CREATEREQUEST);
               }
+			  // [INICIO] CH28 CRI: Se añade para el resto de tipos de ticket que se comportan cn los permisos de crear solicitud 13/09/2017
+			  return Session::haveRight(self::$rightname, self::CREATEREQUEST);
+			 // [FINAL] CH28			  
           }
       }
    }

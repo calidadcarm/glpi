@@ -3,13 +3,9 @@
  * @version $Id$
  -------------------------------------------------------------------------
  GLPI - Gestionnaire Libre de Parc Informatique
- Copyright (C) 2015-2016 Teclib'.
-
- http://glpi-project.org
-
- based on GLPI - Gestionnaire Libre de Parc Informatique
  Copyright (C) 2003-2014 by the INDEPNET Development Team.
- 
+
+ http://indepnet.net/   http://glpi-project.org
  -------------------------------------------------------------------------
 
  LICENSE
@@ -34,29 +30,27 @@
 /** @file
 * @brief
 */
+//[INICIO] CH48 : Descarga de calendarios ical por grupos 13/09/2017
 
 include ('../inc/includes.php');
 
-Session::checkLoginUser();
+//$listgrupos[0]=126;
+//$listgrupos[1]=326;
+//aGrupo=[valor1,valor2,valor3]
 
-$inquest = new TicketSatisfaction();
-
-if (isset($_POST["update"])) {
-   $inquest->check($_POST["tickets_id"], UPDATE);
-	// INICIO [CH35] CRI : que la estrella sea mayor que 0. 13/09/2017
-	if ($_POST["satisfaction"] == 0)
+if (isset($_GET['aGrupo']))
+{
+	$arraygrupo = json_decode($_GET['aGrupo']);
+	if (empty($arraygrupo))
 	{
-		Session::addMessageAfterRedirect(__('ERROR : Para registrar la encuesta es necesario indicar su nivel de satisfacci&oacute;n en la escala de 1 a 5 estrellas'), false, ERROR);
-		Html::back();
+		echo "No hay resultados";
+		exit;
 	}
-    // FINAL [CH35] CRI : que la estrella sea mayor que 0.   
-   $inquest->update($_POST);
-
-   Event::log($inquest->getField('tickets_id'), "ticket", 4, "tracking",
-              //TRANS: %s is the user login
-              sprintf(__('%s updates an item'), $_SESSION["glpiname"]));
-   Html::back();
+	Exportical::generateIcal($arraygrupo);
 }
 
-Html::displayErrorAndDie('Lost');
+
+
+
+
 ?>

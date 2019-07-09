@@ -67,6 +67,12 @@ if (isset($_POST['add'])) {
    } else {
       $track->getEmpty();
    }
+	//[INICIO] CH04 Gobierno TI 11/09/2017
+	if (isset($_POST["phone"]) && !empty($_POST["phone"]))
+	{
+		$_POST["content"] .= "\n\n(*) ".__('User information')." - ".__('Phone')." de contacto : ".$_POST["phone"];
+	}	
+	//[FIN]	   
    if ($newID = $track->add($_POST)) {
       if ($_SESSION['glpibackcreated']) {
          Html::redirect($track->getFormURL()."?id=".$newID);

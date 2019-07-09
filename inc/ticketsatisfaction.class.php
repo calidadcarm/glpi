@@ -119,11 +119,16 @@ class TicketSatisfaction extends CommonDBTM {
 
          // Set default satisfaction to 3 if not set
          if (is_null($this->fields["satisfaction"])) {
-            $this->fields["satisfaction"] = 3;
+            $this->fields["satisfaction"] = 0; // [CH35] CRI : se pone por defecto 0 en vez de 3 by olb26s 13/09/2017
          }
          echo "<tr class='tab_bg_2'>";
          echo "<td>".__('Satisfaction with the resolution of the ticket')."</td>";
          echo "<td>";
+		 
+		 // INICIAL [CH35] CRI : se pone por defecto 0 en vez de 3 by olb26s 13/09/2017
+		 echo "<strong>".__('Indique el nivel de satisfacci&oacute;n marcando las estrellas (1: Nada satisfecho a 5: Muy satisfecho)')."</strong>";
+		 // FINAL [CH35] 
+		 echo "<br>";
          echo "<input type='hidden' name='tickets_id' value='$tid'>";
 
          echo "<select id='satisfaction_data' name='satisfaction'>";

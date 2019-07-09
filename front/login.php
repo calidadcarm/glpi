@@ -83,8 +83,21 @@ if ($auth->Login($login, $password, (isset($_REQUEST["noAUTO"])?$_REQUEST["noAUT
           && empty($REDIRECT)) {
          Html::redirect($CFG_GLPI['root_doc'] . "/front/helpdesk.public.php?create_ticket=1");
       }
-      Html::redirect($CFG_GLPI['root_doc'] . "/front/helpdesk.public.php$REDIRECT");
-
+     // var_dump($_POST['redirect']);
+     // exit();
+	  if (isset($_POST['redirect']) && (strlen($_POST['redirect']) > 0)) {
+	     Html::redirect($CFG_GLPI['root_doc'] . "/plugins/catalogo/front/inicio.php" /* Modificado catalogo */);
+	  } else {
+	  //CH5717
+              if (isset($_GET['redirect'])){
+              Html::redirect($CFG_GLPI['root_doc'] . "/front/helpdesk.public.php$REDIRECT");    
+              } else {
+              Html::redirect($CFG_GLPI['root_doc'] . "/plugins/catalogo/front/inicio.php" /* Modificado catalogo */);  
+              }
+              
+		//Html::redirect($CFG_GLPI['root_doc'] . "/plugins/catalogo/front/inicio.php$REDIRECT" /* Modificado catalogo */);
+      //Html::redirect($CFG_GLPI['root_doc'] . "/plugins/catalogo/front/inicio.php" /* Modificado catalogo */);
+	  }
    } else {
       if ($_SESSION['glpiactiveprofile']['create_ticket_on_login']
           && empty($REDIRECT)) {

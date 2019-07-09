@@ -2083,11 +2083,13 @@ class Profile extends CommonDBTM {
          case "helpdesk_item_type":
             $types = explode(',', $values[$field]);
             $message = array();
+			/*INICIO [CH18] Cambio para evitar que compruebe nombre de clase mal construida. 11/09/2017			
             foreach ($types as $type) {
                if ($item = getItemForItemtype($type)) {
                   $message[] = $item->getTypeName();
                }
-            }
+            }*/
+			// [FIN]
             return implode(', ',$message);
       }
       return parent::getSpecificValueToDisplay($field, $values, $options);

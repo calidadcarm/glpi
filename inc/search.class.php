@@ -343,7 +343,8 @@ class Search {
 
       //// 1 - SELECT
       // request currentuser for SQL supervision, not displayed
-      $SELECT = "SELECT '".Toolbox::addslashes_deep($_SESSION['glpiname'])."' AS currentuser,
+	  //[CH21] Modificado influye en proyectos se agrega DISTINCT 11/09/2017
+      $SELECT = "SELECT DISTINCT '".Toolbox::addslashes_deep($_SESSION['glpiname'])."' AS currentuser,
                         ".self::addDefaultSelect($data['itemtype']);
 
       // Add select for all toview item
@@ -690,7 +691,8 @@ class Search {
 
          // Force group by for all the type -> need to count only on table ID
          if (!isset($searchopt[1]['forcegroupby'])) {
-            $count = "count(*)";
+            //$count = "count(*)";
+			$count = "count(DISTINCT `$itemtable`.`id`)"; //[CH21] Modificado influye en proyectos count(*) 11/09/2017
          } else {
             $count = "count(DISTINCT `$itemtable`.`id`)";
          }
@@ -878,6 +880,9 @@ class Search {
                   $ORDER.
                   $LIMIT;
       }
+	  //jmz18g traza;
+	 // echo $QUERY;
+	  
       $data['sql']['search'] = $QUERY;
    }
 
@@ -2596,7 +2601,18 @@ class Search {
          case 'RSSFeed' :
             $condition = RSSFeed::addVisibilityRestrict();
             break;
+         
+		 // CRI - emb97m - Búsqueda con visibilidad restringida 
+		 case 'KnowbaseItem' :
+		 
+		 if ($_SESSION['glpiactiveprofile']["id"]<>4){ // jdmz18g 23/11/2018 SI EL ID DEL PERFIL ES DISTINTO DE 4 (Super-Admin) APLICAMOS LAS RESTRICCIONES NATURALES DE LA BASE DE CONOCIMIENTO DE GLPI
+		    //echo $_SESSION['glpiname'];
+			$condition = KnowbaseItem::addVisibilityRestrict();
+		 }
 
+            break;
+		 // Fin
+		 
          case 'Notification' :
             if (!Config::canView()) {
                $condition = " `glpi_notifications`.`itemtype` NOT IN ('Crontask', 'DBConnection') ";
@@ -2613,6 +2629,27 @@ class Search {
 
          case 'ProjectTask' :
             $condition  = '';
+			//[INICIO] CH5117 _ Poner condicion para filtrar Todas las tareas, sino tiene esos permisos solo mis tareas 13/09/2017
+			if (!Config::canView()) {				
+			//if (!Session::haveRightsOr('project', array(Project::READALL, ProjectTask::UPDATEMY)))
+			
+				$teamtable  = 'glpi_projecttaskteams';
+				$condition .= "((`$teamtable`.`itemtype` = 'User'
+								 AND `$teamtable`.`items_id` = '".Session::getLoginUserID()."')"; // 1. Tareas en la que estoy en equipo de trabajo
+				//CH5117 : 2.Insertar OR de tareas en el que soy el gestor de proyecto
+				$condition .= " OR (`glpi_projects`.`users_id` = '".Session::getLoginUserID()."')";									 
+								 
+				if (count($_SESSION['glpigroups'])) {
+				   $condition .= " OR (`$teamtable`.`itemtype` = 'Group'
+										AND `$teamtable`.`items_id`
+										   IN (".implode(",",$_SESSION['glpigroups'])."))"; 
+					//CH5117 : 3.Insertar OR de tareas si estoy en grupo gestor de proyecto
+					$condition .= " OR (`glpi_projects`.`groups_id`
+                                       IN (".implode(",",$_SESSION['glpigroups'])."))";										   
+				}
+				$condition .= ") ";
+			}			
+			/*
             $teamtable  = 'glpi_projecttaskteams';
             $condition .= "((`$teamtable`.`itemtype` = 'User'
                              AND `$teamtable`.`items_id` = '".Session::getLoginUserID()."')";
@@ -2622,6 +2659,8 @@ class Search {
                                        IN (".implode(",",$_SESSION['glpigroups'])."))";
             }
             $condition .= ") ";
+			*/
+			//[FINAL]
             break;
             
          case 'Project' :
@@ -3391,13 +3430,23 @@ class Search {
 
          case 'RSSFeed' :
             return RSSFeed::addVisibilityJoins();
-
+		 
+		 // CRI - emb97m - Búsqueda con visibilidad restringida
+		 case 'KnowbaseItem' :
+				return KnowbaseItem::addVisibilityJoins();
+		 // FIN
+		 
          case 'ProjectTask' :
             // Same structure in addDefaultWhere
             $out  = '';
             $out .= self::addLeftJoin($itemtype, $ref_table, $already_link_tables,
                                       "glpi_projecttaskteams", "projecttaskteams_id", 0, 0,
                                       array('jointype' => 'child'));
+			//CH5117 _ Poner otro addLeftJoin para relacionar ProjectTask con Project y que funcionen los filtros enel addWhere 13/09/2017
+            $out .= self::addLeftJoin($itemtype, $ref_table, $already_link_tables,
+                                        "glpi_projects", "projects_id", 0, 0,
+                                          array('jointype' => 'parent'));									  
+									  
             return $out;
 
          case 'Project' :
@@ -3784,7 +3833,12 @@ class Search {
                   break;
             }
          }
-         return $before.$specific_leftjoin;
+		 //jmz18g traza;
+         // echo $before.$specific_leftjoin."<br><br><br><br>";
+		 
+		 return $before.$specific_leftjoin;
+		 
+		 
       }
    }
 
@@ -6166,10 +6220,18 @@ class Search {
    **/
    static function csv_clean($value) {
 
-      $value = str_replace("\"", "''", $value);
-      $value = Html::clean($value, true, 2, false);
+   	  $value = str_replace("&quot;", "''", $value);	//CH10
+	  $value = Html::clean($value, true, 2, false);
+	  $value = str_replace("\"", "''", $value);
       $value = str_replace("&gt;", ">", $value);
       $value = str_replace("&lt;", "<", $value);
+	  
+	  
+	  //[INICIO] CH10: eliminar caracteres &gt; Gobierno TI 11/09/2017
+	  $value = html_entity_decode($value,ENT_NOQUOTES,"UTF-8");
+	  $value = htmlspecialchars_decode($value, ENT_NOQUOTES);
+  
+	  //[FINAL]	  
 
       return $value;
    }
@@ -6290,5 +6352,43 @@ class Search {
       }
       return $tab;
    }
+   
+   //[INICIO] CH46 Crear funcion makeTextSearchlogin evita los like %% 13/09/2017
+   static function makeTextSearchlogin($val, $not=false) {
+
+      $NOT = "";
+      if ($not) {
+         $NOT = "NOT";
+      }
+
+      // Unclean to permit < and > search
+      $val = Toolbox::unclean_cross_side_scripting_deep($val);
+
+      if (($val == 'NULL') || ($val == 'null')) {
+         $SEARCH = " IS $NOT NULL ";
+
+      } else {
+         $begin = 0;
+         $end   = 0;
+         if (($length = strlen($val)) > 0) {
+            if (($val[0] == '^')) {
+               $begin = 1;
+            }
+
+            if ($val[$length-1] == '$') {
+               $end = 1;
+            }
+         }
+
+         if ($begin || $end) {
+            // no Toolbox::substr, to be consistent with strlen result
+            $val = substr($val, $begin, $length-$end-$begin);
+         }
+
+         $SEARCH = " $NOT LIKE '".$val.(!$end?"%":"")."' ";
+      }
+      return $SEARCH;
+   }   
+    //[FIN] [CH46]     
 
 }

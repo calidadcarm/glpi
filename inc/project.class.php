@@ -72,7 +72,36 @@ class Project extends CommonDBTM {
       return Session::haveRightsOr(self::$rightname, array(self::READALL, self::READMY));
    }
 
+   //[INICIO] CH20 : Añadir funcion canUpdateItem comprueba permiso 11/09/2017
+   function canUpdateItem() {
+	   
+		if ($_SESSION['glpiactiveprofile']['id'] == 4)
+		{
+			return true;
+		}
 
+      $cond1= Session::haveAccessToEntity($this->getEntityID());
+	  //$cond2= Session::haveRight(self::$rightname, self::READALL);
+	  $cond2= Session::haveRightsOr(self::$rightname, array(self::READALL, self::READMY));
+	  $soyDirectorProyecto = $this->fields["users_id"] === Session::getLoginUserID();
+      $pertenezcoAlGrupoGestorDelProyecto = $this->isInTheManagerGroup();
+      //echo "cond1=".$cond1." cond2=".$cond2." "."soyDirectorProyecto=".$soyDirectorProyecto." "."pertenezcoAlGrupoGestorDelProyecto=".$pertenezcoAlGrupoGestorDelProyecto." ";
+	  
+      if (!Session::haveAccessToEntity($this->getEntityID())) {
+         return false;
+      }
+	  
+      $project = new Project();
+      if ($project->getFromDB($this->fields['id'])) {
+		  
+         return (Session::haveRightsOr(self::$rightname, array(self::READALL, self::READMY)) &&
+					 ($this->fields["users_id"] == Session::getLoginUserID()
+                         || $this->isInTheManagerGroup()));
+      }
+      return true;
+   }     
+	//[FINAL] CH20 : Añadir funcion canUpdateItem comprueba permiso 11/09/2017
+   
    /**
     * Is the current user have right to show the current project ?
     *
@@ -852,8 +881,10 @@ class Project extends CommonDBTM {
       }
       echo "</tr>";
 
+      //CH6318 [INICIO] Cambio de Posicion texto nombre
+	  /*
       echo "<tr class='tab_bg_1'>";
-      echo "<td>".__('Name')."</td>";
+	  echo "<td>".__('Name')."</td>";
       echo "<td>";
       Html::autocompletionTextField($this,'name');
       echo "</td>";
@@ -862,7 +893,9 @@ class Project extends CommonDBTM {
       Html::autocompletionTextField($this,'code');
       echo "</td>";
       echo "</tr>";
-
+	  */
+	  //CH6318 [FINAL]
+	  
       echo "<tr class='tab_bg_1'>";
       echo "<td>".__('Priority')."</td>";
       echo "<td>";
@@ -958,6 +991,26 @@ class Project extends CommonDBTM {
       echo Html::timestampToString(ProjectTask::getTotalEffectiveDurationForProject($this->fields['id']),
                                    false);
       echo "</td></tr>\n";
+	  
+      //CH6318 [INICIO] Cambio de Posicion texto codigo y nombre
+	  
+      echo "<tr class='tab_bg_1'>";
+	  echo "<td>".__('Code')."</td>";
+      echo "<td>";
+      Html::autocompletionTextField($this,'code');
+      echo "</td>";
+	  echo "<td></td><td></td>";
+      echo "</tr>";
+
+      echo "<tr class='tab_bg_1'>";
+      echo "<td>".__('Name')."</td>";
+      echo "<td colspan='3'>";
+	  echo "<input id='name' type='text' name='name' value=\"".$this->fields['name']."\" class='autocompletion-text-field' size='88'>";
+      //Html::autocompletionTextField($this, "name", ['size' => 80,
+      //                                              'rand' => $rand_name]);
+      echo "</td>";
+      echo "</tr>\n";
+	  //CH6318 [FINAL]
 
       echo "<tr class='tab_bg_1'>";
       echo "<td>".__('Description')."</td>";
@@ -1066,9 +1119,9 @@ class Project extends CommonDBTM {
       if ($canedit && $nb) {
          Html::openMassiveActionsForm('mass'.__CLASS__.$rand);
          $massiveactionparams = array('num_displayed' => min($_SESSION['glpilist_limit'], $nb),
-                                      'container'     => 'mass'.__CLASS__.$rand);
-//                     'specific_actions'
-//                         => array('delete' => _x('button', 'Delete permanently')) );
+                                      'container'     => 'mass'.__CLASS__.$rand,
+                     'specific_actions'
+                         => array('delete' => _x('button', 'Delete permanently')) ); // CH20
 //
 //          if ($this->fields['users_id'] != Session::getLoginUserID()) {
 //             $massiveactionparams['confirm']
@@ -1140,7 +1193,7 @@ class Project extends CommonDBTM {
       $project   = new self();
       if ($project->getFromDB($ID)) {
          $projects = array();
-         foreach ($DB->request('glpi_projects', array('projects_id' => $ID)) as $data) {
+         foreach ($DB->request('glpi_projects', array('projects_id' => $ID, 'is_deleted' => 0)) as $data) { // CRI CH5017 : olb26s : Añadir filtro is_deleted en array 13/09/2017
             $projects += static::getDataToDisplayOnGantt($data['id']);
          }
          ksort($projects);
@@ -1247,9 +1300,10 @@ class Project extends CommonDBTM {
       } else {
          $todisplay = array();
          // Get all root projects
+		 // CRI CH5017 : olb26s Incluir en el where : and is_deleted=0		 
          $query = "SELECT *
                    FROM `glpi_projects`
-                   WHERE `projects_id` = '0'
+                   WHERE `projects_id` = '0' and is_deleted=0
                         AND `show_on_global_gantt` = '1'
                          ".getEntitiesRestrictRequest("AND",'glpi_projects',"", '', true);
          foreach ($DB->request($query) as $data) {

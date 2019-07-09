@@ -1073,6 +1073,13 @@ class Auth extends CommonGLPI {
          }
       }
 
+     //[INICIO] JMZ18G PONEMOS ESTE CONDICIONAL ANTES QUE CAS PARA QUE AL ACTIVAR CAS NO SE INHABILITE API 
+        // using user token for api login
+      if (!empty($_REQUEST['user_token'])) {
+         return self::API;
+      }
+     //[FIN] JMZ18G PONEMOS ESTE CONDICIONAL ANTES QUE CAS PARA QUE AL ACTIVAR CAS NO SE INHABILITE API  
+      
       // Using CAS server
       if (!empty($CFG_GLPI["cas_host"])) {
          if ($redirect) {
@@ -1082,10 +1089,7 @@ class Auth extends CommonGLPI {
          }
       }
 
-      // using user token for api login
-      if (!empty($_REQUEST['user_token'])) {
-         return self::API;
-      }
+
    return false;
    }
 

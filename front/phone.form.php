@@ -58,6 +58,9 @@ if (isset($_POST["add"])) {
          Html::redirect($phone->getFormURL()."?id=".$newID);
       }
    }
+   
+   
+   
    Html::back();
 
 } else if (isset($_POST["delete"])) {

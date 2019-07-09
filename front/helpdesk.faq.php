@@ -54,9 +54,12 @@ if (Session::getLoginUserID()) {
 } else {
    $_SESSION["glpilanguage"] = $CFG_GLPI['language'];
    // Anonymous FAQ
-   Html::simpleHeader(__('FAQ'),
-                      array(__('Authentication') => $CFG_GLPI['root_doc'].'/',
-                            __('FAQ')            => $CFG_GLPI['root_doc'].'/front/helpdesk.faq.php'));
+   //[INICIO] CH47 comentar cabecera si es anonymous permitir ver. 13/09/2017
+   //Html::simpleHeader(__('FAQ'),
+   //                   array(__('Authentication') => $CFG_GLPI['root_doc'].'/',
+   //                         __('FAQ')            => $CFG_GLPI['root_doc'].'/front/helpdesk.faq.php'));
+	Html::includeHeader(__('FAQ'));
+	//[FINAL]   
 }
 
 if (isset($_GET["id"])) {
@@ -76,5 +79,10 @@ if (isset($_GET["id"])) {
    $kb->display($_GET);
 }
 
-Html::helpFooter();
+   //[INICIO] CH47 comentar cabecera si es anonymous permitir ver. 13/09/2017
+	  if (!Session::isMultiEntitiesMode()) {
+		  Html::helpFooter();
+	  }
+	  //Html::helpFooter();
+   //[FIN] CH47 comentar cabecera si es anonymous permitir ver.	  
 ?>

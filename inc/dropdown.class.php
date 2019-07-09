@@ -160,7 +160,12 @@ class Dropdown {
       }
 
       if (!$item instanceof CommonTreeDropdown) {
-         $name = Toolbox::unclean_cross_side_scripting_deep($name);
+			//[INICIO]CH6017 Desplegable values decode html entity		  
+            //$name = Toolbox::unclean_cross_side_scripting_deep($name);
+			$name = Html::clean(Toolbox::unclean_cross_side_scripting_deep(html_entity_decode($name,
+                                                                                               ENT_QUOTES,
+                                                                                               "UTF-8")));
+			//[FINAL]CH6017		 
       }
       $p = array('value'                => $params['value'],
                  'valuename'            => $name,
@@ -776,6 +781,7 @@ class Dropdown {
                                                           Session::getPluralNumber()),
                                  'RequestType'      => _n('Request source', 'Request sources',
                                                           Session::getPluralNumber()),
+								 'FollowupType'     => _n('Followup type', 'Followup types', Session::getPluralNumber()),// CH11 Gobierno TI Nuevo tipo de seguimiento olb26s 11/09/2017															  
                                  'SolutionTemplate' => _n('Solution template', 'Solution templates',
                                                           Session::getPluralNumber()),
                                  'ProjectState'     => _n('Project state', 'Project states',

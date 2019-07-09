@@ -4477,4 +4477,5 @@ class CommonDBTM extends CommonGLPI {
    static function generateLinkContents($link, CommonDBTM $item) {
       return Link::generateLinkContents($link, $item);
    }
+   
 }

@@ -166,8 +166,7 @@ abstract class API extends CommonGLPI {
       $noAuto = true;
       if (isset($params['user_token']) && !empty($params['user_token'])) {
          $_REQUEST['user_token'] = $params['user_token'];
-         $noAuto = false;
-
+        $noAuto = false;
       } else if (!$CFG_GLPI['enable_api_login_credentials']) {
          $this->returnError(__("usage of initSession resource with credentials is disabled"), 400,
                             "ERROR_LOGIN_WITH_CREDENTIALS_DISABLED", false);

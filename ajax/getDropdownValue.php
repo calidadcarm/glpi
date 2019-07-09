@@ -51,16 +51,9 @@ if (isset($_POST["entity_restrict"])
     && !is_array($_POST["entity_restrict"])
     && (substr($_POST["entity_restrict"], 0, 1) === '[')
     && (substr($_POST["entity_restrict"], -1) === ']')) {
-   $decoded = Toolbox::jsonDecode($_POST['entity_restrict']);
-   $entities = [];
-   if (is_array($decoded)) {
-      foreach ($decoded as $value) {
-         $entities[] = (int)$value;
-      }
-   }
-   $_POST["entity_restrict"] = $entities;
+    $_POST["entity_restrict"] = Toolbox::jsonDecode($_POST["entity_restrict"]);
 }
-
+//Toolbox::logInFile('log_dropdown', "where:" . $where . "\r\n");
 // Security
 if (!($item = getItemForItemtype($_POST['itemtype']))) {
    exit();
@@ -142,45 +135,6 @@ if (isset($_POST['_one_id'])) {
 // Count real items returned
 $count = 0;
 
-/**
- * Construct where search part
- *
- * @param string $table    Table name
- * @param string $itemtype Item type
- * @param string $text     Text to search
- * @param array  $withs    Additionnal fields
- * @param string $field    Field name (defaults to 'completename')
- *
- * @return string
- */
-function buildSearchWhereClause(
-   $table,
-   $itemtype,
-   $text,
-   $withs = [],
-   $field = 'completename'
-) {
-   $where = " AND (";
-   $searchTexts = explode(' ', $text);
-   $first = true;
-   foreach ($searchTexts as $searchText) {
-      $search = Search::makeTextSearch($searchText);
-      if (Session::haveTranslations($itemtype, $field)) {
-         $where .= ($first ? "" : " OR ") . " (`$table`.`$field` $search ".
-                        "OR `namet`.`value` $search ";
-      } else {
-         $where .= ($first ? "" : " OR ") . " (`$table`.`$field` $search ";
-      }
-      //Also search on 'displaywith'
-      foreach ($withs as $with) {
-         $where .= " OR `$table`.`$with` ".$search;
-      }
-      $where .= ')';
-      $first = false;
-   }
-   $where .= ")";
-   return $where;
-}
 
 if ($item instanceof CommonTreeDropdown) {
 
@@ -188,12 +142,19 @@ if ($item instanceof CommonTreeDropdown) {
       $where .= " AND `$table`.`id` = '$one_item'";
    } else {
       if (!empty($_POST['searchText'])) {
-         $where .= buildSearchWhereClause(
-            $table,
-            $_POST['itemtype'],
-            $_POST['searchText'],
-            ($displaywith ? $_POST['displaywith'] : [])
-         );
+         $search = Search::makeTextSearch($_POST['searchText']);
+         if (Session::haveTranslations($_POST['itemtype'], 'completename')) {
+            $where .= " AND (`$table`.`completename` $search ".
+                             "OR `namet`.`value` $search " ;
+         } else {
+            $where .= " AND (`$table`.`completename` $search ";
+         }
+         // Also search by id
+         if ($displaywith && in_array('id', $_POST['displaywith'])) {
+            $where .= " OR `$table`.`id` ".$search;
+         }
+
+         $where .= ")";
       }
    }
 
@@ -501,13 +462,25 @@ if ($item instanceof CommonTreeDropdown) {
       $where .=" AND `$table`.`id` = '$one_item'";
    } else {
       if (!empty($_POST['searchText'])) {
-         $where .= buildSearchWhereClause(
-            $table,
-            $_POST['itemtype'],
-            $_POST['searchText'],
-            ($displaywith ? $_POST['displaywith'] : []),
-            $field
-         );
+		  //[INICIO]CH6017 Desplegable values decode html entity
+		  if ($item->getType() == "PluginFormcreatorForm")
+		  { $_POST['searchText'] = htmlentities($_POST['searchText']); }
+		  //[FINAL]CH6017
+         $search = Search::makeTextSearch($_POST['searchText']);
+         $where .=" AND  (`$table`.`$field` ".$search;
+
+         if (Session::haveTranslations($_POST['itemtype'], $field)) {
+            $where .= " OR `namet`.`value` ".$search;
+         }
+         if ($_POST['itemtype'] == "SoftwareLicense") {
+            $where .= " OR `glpi_softwares`.`name` ".$search;
+         }
+         // Also search by id
+         if ($displaywith && in_array('id', $_POST['displaywith'])) {
+            $where .= " OR `$table`.`id` ".$search;
+         }
+
+         $where .= ')';
       }
    }
    $addselect = '';
@@ -627,8 +600,27 @@ if ($item instanceof CommonTreeDropdown) {
             } else {
                $outputval = $data[$field];
             }
-            $outputval = Toolbox::unclean_cross_side_scripting_deep($outputval);
-
+			//[INICIO]CH6017 Desplegable values decode html entity
+            //$outputval = Toolbox::unclean_cross_side_scripting_deep($outputval);
+			$outputval = Html::clean(Toolbox::unclean_cross_side_scripting_deep(html_entity_decode($outputval,
+                                                                                               ENT_QUOTES,
+                                                                                               "UTF-8")));
+			//[FINAL]CH6017
+			
+            if ($displaywith) {
+               foreach ($_POST['displaywith'] as $key) {
+                  if (isset($data[$key])) {
+                     $withoutput = $data[$key];
+                     if (isForeignKeyField($key)) {
+                        $withoutput = Dropdown::getDropdownName(getTableNameForForeignKeyField($key),
+                                                                $data[$key]);
+                     }
+                     if ((strlen($withoutput) > 0) && ($withoutput != '&nbsp;')) {
+                        $outputval = sprintf(__('%1$s - %2$s'), $outputval, $withoutput);
+                     }
+                  }
+               }
+            }
             $ID         = $data['id'];
             $addcomment = "";
             $title      = $outputval;
@@ -645,20 +637,6 @@ if ($item instanceof CommonTreeDropdown) {
                 || (strlen($outputval) == 0)) {
                //TRANS: %1$s is the name, %2$s the ID
                $outputval = sprintf(__('%1$s (%2$s)'), $outputval, $ID);
-            }
-            if ($displaywith) {
-               foreach ($_POST['displaywith'] as $key) {
-                  if (isset($data[$key])) {
-                     $withoutput = $data[$key];
-                     if (isForeignKeyField($key)) {
-                        $withoutput = Dropdown::getDropdownName(getTableNameForForeignKeyField($key),
-                                                                $data[$key]);
-                     }
-                     if ((strlen($withoutput) > 0) && ($withoutput != '&nbsp;')) {
-                        $outputval = sprintf(__('%1$s - %2$s'), $outputval, $withoutput);
-                     }
-                  }
-               }
             }
             array_push($datastoadd, array('id'    => $ID,
                                           'text'  => $outputval,

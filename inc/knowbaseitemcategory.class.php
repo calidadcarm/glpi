@@ -98,8 +98,11 @@ class KnowbaseItemCategory extends CommonTreeDropdown {
          } else {
             // Anonymous access
             if (Session::isMultiEntitiesMode()) {
-               $faq_limit = " AND (`glpi_knowbaseitemcategories`.`entities_id` = '0'
-                                   AND `glpi_knowbaseitemcategories`.`is_recursive` = '1')";
+				//[INICIO] CH47 : Para mostrar en modo anomimo los items 13/09/2017				
+                //$faq_limit = " AND (`glpi_knowbaseitemcategories`.`entities_id` = '0'
+                //                   AND `glpi_knowbaseitemcategories`.`is_recursive` = '1')";
+				$faq_limit = "";
+				//[FINAL]				
             }
          }
 

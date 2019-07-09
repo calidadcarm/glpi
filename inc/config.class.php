@@ -993,7 +993,10 @@ class Config extends CommonDBTM {
       echo "</td>";
       echo "<td>" .__('Number format') . "</td>";
       $values = array(0 => '1 234.56',
-                      1 => '1,234.56',
+	  //[INICIO] CH08 Gobierno TI: 11/09/2017
+                      //1 => '1,234.56',
+					  1 => '1.234,56',
+	  //[FIN]
                       2 => '1 234,56',
                       3 => '1234.56',
                       4 => '1234,56');

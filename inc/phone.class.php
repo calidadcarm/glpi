@@ -177,11 +177,14 @@ class Phone extends CommonDBTM {
                           (isset($options['withtemplate']) && $options['withtemplate']?"*":"")).
            "</td>";
       echo "<td>";
-      $objectName = autoName($this->fields["name"], "name",
+	  
+	  $objectName = autoName($this->fields["name"], "name",
                              (isset($options['withtemplate']) && ($options['withtemplate'] == 2)),
                              $this->getType(), $this->fields["entities_id"]);
       Html::autocompletionTextField($this, 'name', array('value' => $objectName));
+	  
       echo "</td>";
+	  
       echo "<td>".__('Status')."</td>";
       echo "<td>";
       State::dropdown(array('value'     => $this->fields["states_id"],
@@ -190,11 +193,13 @@ class Phone extends CommonDBTM {
       echo "</td></tr>\n";
 
       echo "<tr class='tab_bg_1'>";
-      echo "<td>".__('Location')."</td>";
+
+		 echo "<td>".__('Serial number')."</td>";
       echo "<td>";
-      Location::dropdown(array('value'  => $this->fields["locations_id"],
-                               'entity' => $this->fields["entities_id"]));
-      echo "</td>";
+    Html::autocompletionTextField($this,"serial");
+      echo "</td>";	  
+	  
+
       echo "<td>".__('Type')."</td>";
       echo "<td>";
       PhoneType::dropdown(array('value' => $this->fields["phonetypes_id"]));
@@ -226,7 +231,8 @@ class Phone extends CommonDBTM {
       PhoneModel::dropdown(array('value' => $this->fields["phonemodels_id"]));
       echo "</td></tr>\n";
 
-      echo "<tr class='tab_bg_1'>";
+   //[INICIO] JMZ18G Ocultar campos que no se usan en la carm 12/07/2018    
+     /* echo "<tr style='display:none;' class='tab_bg_1'>";
       echo "<td>".__('Alternate username number')."</td>";
       echo "<td>";
       Html::autocompletionTextField($this, "contact_num");
@@ -235,8 +241,12 @@ class Phone extends CommonDBTM {
       echo "<td>";
       Html::autocompletionTextField($this,"serial");
       echo "</td></tr>\n";
+	  */
+	  //[FINAL] JMZ18G Ocultar campos que no se usan en la carm 12/07/2018
+	  
+	//[INICIO] JMZ18G Ocultar campos que no se usan en la carm 12/07/2018  
 
-      echo "<tr class='tab_bg_1'>";
+      echo "<tr style='display:none;' class='tab_bg_1'>";
       echo "<td>".__('Alternate username')."</td><td>";
       Html::autocompletionTextField($this, "contact");
       echo "</td>";
@@ -249,6 +259,8 @@ class Phone extends CommonDBTM {
                              $this->getType(), $this->fields["entities_id"]);
       Html::autocompletionTextField($this, 'otherserial', array('value' => $objectName));
       echo "</td></tr>\n";
+
+//[FINAL] JMZ18G Ocultar campos que no se usan en la carm 12/07/2018
 
       echo "<tr class='tab_bg_1'>";
       echo "<td>".__('User')."</td>";
@@ -267,7 +279,7 @@ class Phone extends CommonDBTM {
                                        'target'       => $target));
       echo "</td></tr>\n";
 
-      $rowspan        = 6;
+      $rowspan        = 2;
       echo "<tr class='tab_bg_1'>";
       echo "<td>".__('Group')."</td>";
       echo "<td>";
@@ -279,31 +291,43 @@ class Phone extends CommonDBTM {
       echo "<td rowspan='$rowspan'>
             <textarea cols='45' rows='".($rowspan+3)."' name='comment' >".$this->fields["comment"];
       echo "</textarea></td></tr>\n";
-
-      echo "<tr class='tab_bg_1'>";
+//[INICIO] JMZ18G Ocultar campos que no se usan en la carm 12/07/2018
+      echo "<tr style='display:none;' class='tab_bg_1'>";
       echo "<td>".__('Brand')."</td>";
       echo "<td>";
       Html::autocompletionTextField($this,"brand");
       echo "</td></tr>\n";
-
-      echo "<tr class='tab_bg_1'>";
+//[FINAL] JMZ18G Ocultar campos que no se usan en la carm 12/07/2018
+      echo "<tr style='display:none;' class='tab_bg_1'>";
       echo "<td>".__('Power supply')."</td>";
       echo "<td>";
       PhonePowerSupply::dropdown(array('value' => $this->fields["phonepowersupplies_id"]));
       echo "</td></tr>\n";
 
-      echo "<tr class='tab_bg_1'>";
+//[INICIO] JMZ18G Ocultar campos que no se usan en la carm 12/07/2018
+	  echo "<tr style='display:none;' class='tab_bg_1'>";
       echo "<td>"._n('Firmware', 'Firmware', 1)."</td>";
       echo "<td>";
       Html::autocompletionTextField($this, "firmware");
       echo "</td></tr>\n";
+//[FINAL] JMZ18G Ocultar campos que no se usan en la carm 12/07/2018
 
-      echo "<tr class='tab_bg_1'>";
+      echo "<tr style='display:none;' class='tab_bg_1'>";
       echo "<td>"._x('quantity', 'Number of lines')."</td><td>";
       Html::autocompletionTextField($this, "number_line");
       echo "</td></tr>\n";
 
       echo "<tr class='tab_bg_1'>";
+	   echo "<td>".__('Location')."</td>";
+      
+      echo "<td>";
+  Location::dropdown(array('value'  => $this->fields["locations_id"],
+                               'entity' => $this->fields["entities_id"]));	  
+      
+      echo "</td></tr>\n";	  
+	  
+//[INICIO] JMZ18G Ocultar campos que no se usan en la carm 12/07/2018	  
+      echo "<tr style='display:none;' class='tab_bg_1'>";
       echo "<td>".__('Flags')."</td>";
       echo "<td>";
       // micro?
@@ -319,6 +343,8 @@ class Phone extends CommonDBTM {
       echo "</td>";
 
       echo "</tr>\n";
+
+//[FINAL] JMZ18G Ocultar campos que no se usan en la carm 12/07/2018
       
       if (!empty($ID)
          && $this->fields["is_dynamic"]) {

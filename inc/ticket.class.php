@@ -75,6 +75,15 @@ class Ticket extends CommonITILObject {
    const INCIDENT_TYPE = 1;
    // Demand type
    const DEMAND_TYPE   = 2;
+   
+   //[INICIO] CH02 Gobierno TI: 11/09/2017
+   const CONSULTA_TYPE = 201;
+   const TAREA_TYPE = 202;
+   const QUEJA_TYPE = 203;
+   const ALERTA_TYPE = 204;
+   const EXCEPCION_TYPE = 205;   
+   const SUGERENCIA_TYPE = 206;   
+	//[FIN]    
 
    const READMY           =      1;
    const READALL          =   1024;
@@ -1033,15 +1042,36 @@ class Ticket extends CommonITILObject {
                }
             }
          }
-
+        
          $groups = $this->getGroups($k);
          if (count($groups)) {
             $field = 'groups_id';
             foreach ($groups as $group) {
-               if (!isset($input['_'.$field.'_'.$t]) || !in_array($group['id'], $input['_'.$field.'_'.$t])) {
+			   /* if (!isset($input['_'.$field.'_'.$t]) || !in_array($group['id'], $input['_'.$field.'_'.$t])) {
                   $input['_'.$field.'_'.$t][]             = $group['id'];
                   $tocleanafterrules['_'.$field.'_'.$t][] = $group['id'];
-               }
+                  }  */
+			  
+			  
+			  //[INICIO] 	
+			  // jmz18g inforges: ticket id=483921 07/06/2018 ===============================================================================
+			   if (!isset($input['_'.$field.'_'.$t])) {
+                  $input['_'.$field.'_'.$t][]             = $group['id'];
+                  $tocleanafterrules['_'.$field.'_'.$t][] = $group['id'];
+               } else {
+
+			   if ((is_array($input['_'.$field.'_'.$t])) and (!in_array($group['id'], $input['_'.$field.'_'.$t]))){
+
+			      $input['_'.$field.'_'.$t][]             = $group['id'];
+                  $tocleanafterrules['_'.$field.'_'.$t][] = $group['id'];
+			   
+			   } 
+			   
+			   }		   
+			   // jmz18g inforges: ticket id=483921 07/06/2018 ===============================================================================
+			   //[FIN] 
+			   
+			   
             }
          }
 
@@ -2469,6 +2499,14 @@ class Ticket extends CommonITILObject {
                                                                     => array('jointype'
                                                                                => 'itemtype_item')));
 
+	  //[INICIO] CH07 Gobierno TI: 11/09/2017
+      $tab[1004]['table']         = 'glpi_users';
+      $tab[1004]['field']         = 'registration_number';
+      $tab[1004]['linkfield']     = 'users_id_recipient';
+      $tab[1004]['name']          = __('Office');
+      $tab[1004]['massiveaction'] = false;
+	  //[FIN]
+																			   
       $tab += $this->getSearchOptionsActors();
 
 
@@ -2633,6 +2671,22 @@ class Ticket extends CommonITILObject {
                                                       'joinparams'
                                                        => array('jointype'  => 'child',
                                                                 'condition' => $followup_condition)));
+
+	  //[INICIO] CH11 Gobierno TI Nuevo tipo de seguimiento olb26s 11/09/2016									   
+      $tab[96]['table']         = 'glpi_followuptypes';
+      $tab[96]['field']         = 'name';
+      $tab[96]['name']          = __('Followup type');
+      $tab[96]['datatype']          = 'itemlink';	
+	  $tab[96]['right']             = 'all';
+      $tab[96]['forcegroupby']  = true;
+      $tab[96]['massiveaction'] = false;
+      $tab[96]['joinparams']    = array('beforejoin'
+                                          => array('table'      => 'glpi_ticketfollowups',
+                                                   'joinparams' => array('jointype' => 'child',
+                                                                         'condition' => $followup_condition)));
+												   
+		//[FINAL]
+																
 
 
       $tab += $this->getSearchOptionsStats();
@@ -2839,6 +2893,14 @@ class Ticket extends CommonITILObject {
 
       $options[self::INCIDENT_TYPE] = __('Incident');
       $options[self::DEMAND_TYPE]   = __('Request');
+	  //[INICIO] CH02 Gobierno TI: 11/09/2017
+      $options[self::CONSULTA_TYPE]   =  __('Consulta');
+      $options[self::TAREA_TYPE]   = __('Tarea');
+      $options[self::QUEJA_TYPE]   = __('Queja');
+      $options[self::ALERTA_TYPE]   = __('Alerta');
+      $options[self::EXCEPCION_TYPE]   = __('Excepcion');	 
+	  $options[self::SUGERENCIA_TYPE]   = __('Sugerencia');	  
+	  //[FIN]	  
 
       return $options;
    }
@@ -2858,6 +2920,26 @@ class Ticket extends CommonITILObject {
          case self::DEMAND_TYPE :
             return __('Request');
 
+		 //[INICIO] CH02 Gobierno TI: 11/09/2017			
+         case self::CONSULTA_TYPE :
+            return __('Consulta');
+
+         case self::TAREA_TYPE :
+            return __('Tarea');
+
+         case self::QUEJA_TYPE :
+            return __('Queja');
+
+         case self::ALERTA_TYPE :
+            return __('Alerta');
+
+         case self::EXCEPCION_TYPE :
+            return __('Excepcion');
+
+		case self::SUGERENCIA_TYPE :
+            return __('Sugerencia');
+			//[FIN]				
+			
          default :
             // Return $value if not defined
             return $value;
@@ -3250,12 +3332,41 @@ class Ticket extends CommonITILObject {
       }
       echo "</th></tr>";
 
+	  //[INICIO] CH05 Gobierno TI: 11/09/2017 - CH5617  Lo suprime
+	  /* 
+	  echo "<tr class='tab_bg_1' colspan='2'>";
+      echo "<td></td>";		  
+      echo "<td>".__('Select the incident or request')."</td></tr>";	
+	  */
+	  //[FIN]	  
+	  
       echo "<tr class='tab_bg_1'>";
       echo "<td>".sprintf(__('%1$s%2$s'), __('Type'), $tt->getMandatoryMark('type'))."</td>";
       echo "<td>";
-      self::dropdownType('type', array('value'     => $options['type'],
-                                       'on_change' => 'this.form.submit()'));
+      //[INICIO] CH03 Gobierno TI: 11/09/2017
+      //self::dropdownType('type', array('value'     => $options['type'],
+      //                                 'on_change' => 'this.form.submit()'));
+	  $items = self::getTypes();
+	  unset($items[self::EXCEPCION_TYPE]);
+	  unset($items[self::TAREA_TYPE]);	  
+	  unset($items[self::QUEJA_TYPE]);
+	  unset($items[self::ALERTA_TYPE]);
+	  unset($items[self::SUGERENCIA_TYPE]);
+
+	  unset($items[self::CONSULTA_TYPE]); //[INICIO] CH5617 Gobierno TI: 25/09/2017
+	  unset($items[self::DEMAND_TYPE]);	  //[INICIO] CH5617 Gobierno TI: 25/09/2017
+
+  
+	  Dropdown::showFromArray('type', $items, array('value'     => $options['type'],
+                                       'on_change' => 'submit()'));	
+	  //[FIN]									   
       echo "</td></tr>";
+	  
+	  //[INICIO] CH05 Gobierno TI: 11/09/2017
+      echo "<tr class='tab_bg_1' colspan='2'>";
+      echo "<td></td>";	  
+      echo "<td>".__('Select the category')."</td></tr>";
+	  //[FIN]	  
 
       echo "<tr class='tab_bg_1'>";
       echo "<td>".sprintf(__('%1$s%2$s'), __('Category'),
@@ -3267,9 +3378,18 @@ class Ticket extends CommonITILObject {
          case self::DEMAND_TYPE :
             $condition .= " AND `is_request`='1'";
             break;
-
-         default: // self::INCIDENT_TYPE :
+	  //[INICIO] CH36 Gobierno TI: 13/09/2017
+         case self::INCIDENT_TYPE :
             $condition .= " AND `is_incident`='1'";
+            break;	  
+	   //[FIN]
+	   //[INICIO] CH36 Gobierno TI: 13/09/2017
+       //  default: // self::INCIDENT_TYPE :
+       //     $condition .= " AND `is_incident`='1'";
+         default: // self::INCIDENT_TYPE :
+            $condition .= " AND (`is_incident`='1' OR `is_request`='1')";
+			break;			
+	   //[FIN]	
       }
       $opt = array('value'     => $options['itilcategories_id'],
                    'condition' => $condition,
@@ -3294,7 +3414,8 @@ class Ticket extends CommonITILObject {
             echo "</td></tr>";
          }
       }
-
+	 //[INICIO] CH12 Gobierno TI: 17/04/2016 No sale seguimiento por correo.
+	/*
       if (empty($delegating)
           && NotificationTargetTicket::isAuthorMailingActivatedForHelpdesk()) {
          echo "<tr class='tab_bg_1'>";
@@ -3322,7 +3443,34 @@ class Ticket extends CommonITILObject {
             echo "</td></tr>";
          }
       }
+	  */
+	  //[FIN]
 
+	  //[INICIO] CH05 Gobierno TI 11/09/2017
+      echo "<tr class='tab_bg_1' colspan='2'>";
+      echo "<td></td>";		  
+      echo "<td>".__('Describe contact phone')."</td></tr>";
+	  //[FIN]	  
+	  
+	//[INICIO] CH04 Gobierno TI 11/09/2017
+      if (!$tt->isHiddenField('phone')
+          || $tt->isPredefinedField('phone')) {
+				$user = new User();
+				if ($user->getFromDB(Session::getLoginUserID())) {
+						$phone = $user->fields['phone'];
+				} else {
+						$phone = "";
+				}
+				
+         echo "<tr class='tab_bg_1'>";
+         echo "<td>".__('Phone contact')."</td>";
+         echo "<td><input type='text' maxlength='15' size='10' name='phone'
+                          value=\"".$phone."\"></td></tr>";
+      }	  
+	 //[FIN]	  
+	  
+	  //[INICIO] CH15 Gobierno TI 11/09/20176 
+	  /*
       if (!$tt->isHiddenField('locations_id')) {
          echo "<tr class='tab_bg_1'><td>";
          printf(__('%1$s%2$s'), __('Location'), $tt->getMandatoryMark('locations_id'));
@@ -3377,15 +3525,16 @@ class Ticket extends CommonITILObject {
          }
          echo "</td></tr>";
       }
-
+		*/
+		//[FIN] 
 
       if (!$tt->isHiddenField('name')
           || $tt->isPredefinedField('name')) {
          echo "<tr class='tab_bg_1'>";
          echo "<td>".sprintf(__('%1$s%2$s'), __('Title'), $tt->getMandatoryMark('name'))."<td>";
          if (!$tt->isHiddenField('name')) {
-            echo "<input type='text' maxlength='250' size='80' name='name'
-                       value=\"".$options['name']."\">";
+            echo "<input type='text' maxlength='250' size='100' name='name'
+                       value=\"".$options['name']."\">"; // [CH33] Ampliar campo titulo size de 80 a 100
          } else {
             echo $options['name'];
             echo "<input type='hidden' name='name' value=\"".$options['name']."\">";
@@ -3401,8 +3550,8 @@ class Ticket extends CommonITILObject {
          $rand      = mt_rand();
          $rand_text = mt_rand();
 
-         $cols       = 90;
-         $rows       = 6;
+         $cols       = 100; // [CH33] Ampliar campo titulo size de 90 a 100
+         $rows       = 12;   // [CH33] Ampliar campo titulo size de 6 a 12
          $content_id = "content$rand";
 
          $content = $options['content'];
@@ -4141,6 +4290,9 @@ class Ticket extends CommonITILObject {
                break;
 
             default :
+			//[INICIO] CH36 Gobierno TI: 13/09/2017
+               $opt['condition'] .= "(`is_request`='1' OR `is_incident`='1')";
+			// [FINAL]			
                break;
          }
          echo "<span id='show_category_by_type'>";
@@ -4405,7 +4557,7 @@ class Ticket extends CommonITILObject {
       if ($canupdate) {
          echo $tt->getBeginHiddenFieldValue('name');
          echo "<input type='text' style='width:98%' maxlength=250 name='name' ".
-                " value=\"".Html::cleanInputText($this->fields["name"])."\">";
+                " value=\"".Html::cleanInputText($this->fields["name"])."\">"; //[CH33] NO Cambiar style='width:98%'o size=90 por 120 por probar 13/09/2017
          echo $tt->getEndHiddenFieldValue('name', $this);
       } else {
          if (empty($this->fields["name"])) {
@@ -4430,7 +4582,8 @@ class Ticket extends CommonITILObject {
       echo $tt->getBeginHiddenFieldValue('content');
       $rand       = mt_rand();
       $rand_text  = mt_rand();
-      $rows       = 6;
+      $cols       = 120; //[CH33] añadir cols 120	  
+      $rows       = 18; //[CH33] Cambiar 6 por 18
       $content_id = "content$rand";
 
       $content = $this->fields['content'];
@@ -4443,20 +4596,25 @@ class Ticket extends CommonITILObject {
                                               $content,
                                               $rand,
                                               !$canupdate);
-         $rows = 10;
+         $cols = 100; //[CH33] añadir cols 100
+		 $rows = 10;
       } else {
-         $content = $this->setSimpleTextContent($content);
+           $content = $this->setSimpleTextContent($content);
       }
 
       echo "<div id='content$rand_text'>";
       if ($CFG_GLPI['use_rich_text'] || $canupdate) {
-         echo "<textarea id='$content_id' name='content' style='width:100%' rows='$rows'>".
+         echo "<textarea id='$content_id' name='content' style='width:100%' rows='$rows'>". //CH33 no añado cols='$cols' por probar
                $content."</textarea></div>";
          if (!$CFG_GLPI["use_rich_text"]) {
             echo Html::scriptBlock("$(document).ready(function() { $('#$content_id').autogrow(); });");
          }
       } else {
-         echo $content;
+         //[INICIO] CH6118 Formato text
+		 //echo $content;
+         $content = Toolbox::unclean_cross_side_scripting_deep(Html::entity_decode_deep($this->fields['content']));
+         echo nl2br(Html::Clean($content));		 
+		 //[FINAL] CH6118 Formato text
       }
       echo $tt->getEndHiddenFieldValue('content', $this);
 
@@ -4724,15 +4882,25 @@ class Ticket extends CommonITILObject {
             break;
 
          case "tovalidate" : // on affiche les tickets à valider
-            $query .= " LEFT JOIN `glpi_ticketvalidations`
+            /*   CRI  se quita la condición de Validación Global "En espera de validación"
+			$query .= " LEFT JOIN `glpi_ticketvalidations`
                            ON (`glpi_tickets`.`id` = `glpi_ticketvalidations`.`tickets_id`)
                         WHERE $is_deleted
                               AND `users_id_validate` = '".Session::getLoginUserID()."'
                               AND `glpi_ticketvalidations`.`status` = '".CommonITILValidation::WAITING."'
-                              AND `glpi_tickets`.`global_validation` = '".CommonITILValidation::WAITING."'
+                              AND `glpi_tickets`.`global_validation` = '".CommonITILValidation::WAITING."'  
                               AND (`glpi_tickets`.`status` NOT IN ('".self::CLOSED."',
                                                                    '".self::SOLVED."')) ".
                        getEntitiesRestrictRequest("AND", "glpi_tickets");
+		    */
+			 $query .= " LEFT JOIN `glpi_ticketvalidations`
+                           ON (`glpi_tickets`.`id` = `glpi_ticketvalidations`.`tickets_id`)
+                        WHERE $is_deleted
+                              AND `users_id_validate` = '".Session::getLoginUserID()."'
+                              AND `glpi_ticketvalidations`.`status` = '".CommonITILValidation::WAITING."'
+                              AND (`glpi_tickets`.`status` NOT IN ('".self::CLOSED."',
+                                                                   '".self::SOLVED."')) ".
+                       getEntitiesRestrictRequest("AND", "glpi_tickets");		   
             break;
 
          case "rejected" : // on affiche les tickets rejetés
@@ -4756,6 +4924,9 @@ class Ticket extends CommonITILObject {
             break;
 
          case "survey" : // tickets dont l'enquête de satisfaction n'est pas remplie et encore valide
+			 //[INICIO] CH37 Encuesta solicitante por autor by olb26s 13/07/2017
+			 /* 		 
+		 
             $query .= " INNER JOIN `glpi_ticketsatisfactions`
                            ON (`glpi_tickets`.`id` = `glpi_ticketsatisfactions`.`tickets_id`)
                         INNER JOIN `glpi_entities`
@@ -4774,6 +4945,15 @@ class Ticket extends CommonITILObject {
                                                CURDATE()) > 0)
                               AND `glpi_ticketsatisfactions`.`date_answered` IS NULL ".
                               getEntitiesRestrictRequest("AND", "glpi_tickets");
+							  */
+            $query .= " INNER JOIN `glpi_ticketsatisfactions`
+                           ON (`glpi_tickets`.`id` = `glpi_ticketsatisfactions`.`tickets_id`)
+                        WHERE $is_deleted
+                              AND ($search_users_id)
+                              AND `glpi_tickets`.`status` = '".self::CLOSED."'
+                              AND `glpi_ticketsatisfactions`.`date_answered` IS NULL ".
+                              getEntitiesRestrictRequest("AND", "glpi_tickets");
+			//[FIN] CH37 
             break;
 
          case "requestbyself" : // on affiche les tickets demandés le user qui sont planifiés ou assignés
@@ -4942,11 +5122,11 @@ class Ticket extends CommonITILObject {
                   $options['criteria'][2]['searchtype'] = 'equals';
                   $options['criteria'][2]['value']      = 'old';
                   $options['criteria'][2]['link']       = 'AND NOT';
-
+                  /*   CRI se quita la condición de Validación Global "En espera de validación"
                   $options['criteria'][3]['field']      = 52; // global validation status
                   $options['criteria'][3]['searchtype'] = 'equals';
-                  $options['criteria'][3]['value']      = CommonITILValidation::WAITING;
-                  $options['criteria'][3]['link']       = 'AND';
+                  $options['criteria'][3]['value']      = CommonITILValidation::WAITING;  
+                  $options['criteria'][3]['link']       = 'AND';     */
                   $forcetab                         = 'TicketValidation$1';
 
                   echo "<a href=\"".$CFG_GLPI["root_doc"]."/front/ticket.php?".
@@ -5031,8 +5211,10 @@ class Ticket extends CommonITILObject {
                   $options['criteria'][2]['searchtype'] = 'contains';
                   $options['criteria'][2]['value']      = 'NULL';
                   $options['criteria'][2]['link']       = 'AND';
-
-                  if (Session::haveRight('ticket', Ticket::SURVEY)) {
+				  
+				  // [INICIO] CH37 Cambiar el autor por el solicitante by olb26s 13/09/2017
+                  /*
+				  if (Session::haveRight('ticket', Ticket::SURVEY)) {
                      $options['criteria'][3]['field']      = 22; // author
                      $options['criteria'][3]['searchtype'] = 'equals';
                      $options['criteria'][3]['value']      = Session::getLoginUserID();
@@ -5043,6 +5225,13 @@ class Ticket extends CommonITILObject {
                      $options['criteria'][3]['value']      = Session::getLoginUserID();
                      $options['criteria'][3]['link']       = 'AND';
                   }
+				  */
+				  $options['criteria'][3]['field']      = 4;
+                  $options['criteria'][3]['searchtype'] = 'equals';
+                  $options['criteria'][3]['value']      = Session::getLoginUserID();
+                  $options['criteria'][3]['link']       = 'AND';				  
+				  
+				  // [FIN] CH37
                   $forcetab                 = 'Ticket$3';
 
                   echo "<a href=\"".$CFG_GLPI["root_doc"]."/front/ticket.php?".
@@ -5122,10 +5311,14 @@ class Ticket extends CommonITILObject {
       $query .= getEntitiesRestrictRequest("WHERE", "glpi_tickets");
 
       if ($foruser) {
+		 // [INICIO] CH6218 Quitar la consulta de ticket borrados
+		/*		
          $query .= " AND (`glpi_tickets_users`.`users_id` = '".Session::getLoginUserID()."'
                            OR `glpi_tickets`.`users_id_recipient` = '".Session::getLoginUserID()."'
                            OR `glpi_ticketvalidations`.`users_id_validate` = '".Session::getLoginUserID()."'";
-
+		*/
+		$query .= " AND (`glpi_tickets_users`.`users_id` = '".Session::getLoginUserID()."' ";
+		
          if (Session::haveRight(self::$rightname, self::READGROUP)
              && isset($_SESSION["glpigroups"])
              && count($_SESSION["glpigroups"])) {
@@ -5142,8 +5335,8 @@ class Ticket extends CommonITILObject {
                          GROUP BY `status`";
 
       $result         = $DB->query($query);
-      $result_deleted = $DB->query($query_deleted);
-
+	  $result_deleted = $DB->query($query_deleted);
+	  
       $status = array();
       foreach (self::getAllStatusArray() as $key => $val) {
          $status[$key] = 0;
@@ -5161,19 +5354,32 @@ class Ticket extends CommonITILObject {
             $number_deleted += $data["COUNT"];
          }
       }
+
       $options['criteria'][0]['field']      = 12;
       $options['criteria'][0]['searchtype'] = 'equals';
       $options['criteria'][0]['value']      = 'process';
       $options['criteria'][0]['link']       = 'AND';
+	  
+	  //[INICIO] CH5317 Mejora en la lista  central para poner solicitante en la busqueda por estados en Perfil Self Service  13/09/2017
+	  $options['criteria'][1]['field']      = 4; // users_id Solicitante
+	  $options['criteria'][1]['searchtype'] = 'equals';
+	  $options['criteria'][1]['value']      = Session::getLoginUserID();
+	  $options['criteria'][1]['link']       = 'AND';
+	  // [FINAL]
+	  
       $options['reset']         ='reset';
 
       echo "<table class='tab_cadrehov' >";
       echo "<tr class='noHover'><th colspan='2'>";
 
       if ($_SESSION["glpiactiveprofile"]["interface"] != "central") {
+		  /*
+		  //[INICIO] :CH5617 Quitar enlace ticket nuevo
          echo "<a href=\"".$CFG_GLPI["root_doc"]."/front/helpdesk.public.php?create_ticket=1\">".
                 __('Create a ticket')."&nbsp;<img src='".$CFG_GLPI["root_doc"].
                 "/pics/menu_add.png' title=\"". __s('Add')."\" alt=\"".__s('Add')."\"></a>";
+		  */
+		  //[FINAL] :CH5617 Quitar enlace
       } else {
          echo "<a href=\"".$CFG_GLPI["root_doc"]."/front/ticket.php?".
                 Toolbox::append_params($options,'&amp;')."\">".__('Ticket followup')."</a>";
@@ -5191,11 +5397,11 @@ class Ticket extends CommonITILObject {
 
       $options['criteria'][0]['value'] = 'all';
       $options['is_deleted']  = 1;
+
       echo "<tr class='tab_bg_2'>";
       echo "<td><a href=\"".$CFG_GLPI["root_doc"]."/front/ticket.php?".
                  Toolbox::append_params($options,'&amp;')."\">".__('Deleted')."</a></td>";
       echo "<td class='numeric'>".$number_deleted."</td></tr>";
-
       echo "</table><br>";
    }
 
@@ -5346,15 +5552,30 @@ class Ticket extends CommonITILObject {
             $restrict = "(`glpi_items_tickets`.`items_id` = '".$item->getID()."' ".
                         " AND `glpi_items_tickets`.`itemtype` = '".$item->getType()."')";
 
-
+			// [INICIO] CH32 CRI 2.0 Si perfil tiene restriccion de no ver todos los tickets, 
+			// mostrar solo los tickets del CI para los usuarios del grupo de soporte de ese CI 13/09/2017
             // you can only see your tickets
             if (!Session::haveRight(self::$rightname, self::READALL)) {
+					$objeto = $item->getType();
+					$appli = new $objeto();
+					$appli->getFromDB($item->getID());
+					$table = $appli->getTable();
+					if (isset($appli->fields['groups_id_tech']))
+					{
+					$restrict .= "	AND ('".Session::getLoginUserID()."' IN (select distinct glpi_groups_users.users_id from ".$table."
+							left join glpi_groups_users on (".$table.".groups_id_tech = glpi_groups_users.groups_id)
+							where  (".$table.".id = ".$item->getID().")
+							))";
+					}				
+			/*
                $restrict .= " AND (`glpi_tickets`.`users_id_recipient` = '".Session::getLoginUserID()."'
                                    OR (`glpi_tickets_users`.`tickets_id` = `glpi_tickets`.`id`
                                        AND `glpi_tickets_users`.`users_id`
                                             = '".Session::getLoginUserID()."')
                                    OR `glpi_groups_tickets`.`groups_id` IN (".implode(",",$_SESSION['glpigroups'])."))";
+			*/
             }
+			// [FINAL] CH32 13/09/2017
 
             $order    = '`glpi_tickets`.`date_mod` DESC';
 
@@ -5427,7 +5648,7 @@ class Ticket extends CommonITILObject {
          echo "<tr><th>".__('No ticket found.')."</th></tr>";
       }
 
-      if ($item->getID()
+/*      if ($item->getID()
           && ($item->getType() == 'User')
           && self::canCreate()
           && !(!empty($withtemplate) && ($withtemplate == 2))
@@ -5437,8 +5658,25 @@ class Ticket extends CommonITILObject {
                               '_add_fromitem', __('New ticket for this item...'),
                               array('_users_id_requester' => $item->getID()));
          echo "</td></tr>";
-      }
-
+      }  */
+	  
+	  //[INICIO] 
+	  // ========== jmz18g - INFORGES ========== PHP Notice: Undefined index: is_template in /var/www/html/glpi/inc/ticket.class.php at line 5640 ==============	
+	  
+if ($item->getID()
+          && ($item->getType() == 'User')
+          && self::canCreate()
+          && !(!empty($withtemplate) && ($withtemplate == 2))
+          && ((!isset($item->fields['is_template'])) or ($item->fields['is_template'] == 0))) {
+         echo "<tr><td class='tab_bg_2 center b' colspan='$colspan'>";
+         Html::showSimpleForm($CFG_GLPI["root_doc"]."/front/ticket.form.php",
+                              '_add_fromitem', __('New ticket for this item...'),
+                              array('_users_id_requester' => $item->getID()));
+         echo "</td></tr>";
+      }	  
+	  
+	  // ========== jmz18g - INFORGES ========== PHP Notice: Undefined index: is_template in /var/www/html/glpi/inc/ticket.class.php at line 5640 ==============		
+	  //[FIN] 
       // Ticket list
       if ($number > 0) {
          self::commonListHeader(Search::HTML_OUTPUT);
@@ -6120,8 +6358,18 @@ class Ticket extends CommonITILObject {
    function convertContentForNotification($content, $item) {
       global $CFG_GLPI, $DB;
 
+	  //[INICIO] CH5417 para convertir todas las entidades HTML a sus caracteres correspondientes	  
+      //$html = str_replace(array('&','&amp;nbsp;'), array('&amp;',' '),
+      //                     html_entity_decode($content, ENT_QUOTES, "UTF-8"));
+	  $content = html_entity_decode($content, ENT_NOQUOTES,"UTF-8");
+	  $needle = array("<",">");
+	  $replace = array("< ", " >");
+	  $string = str_replace($needle, $replace, $content);
+	  $content = htmlspecialchars_decode($string, ENT_NOQUOTES);
       $html = str_replace(array('&','&amp;nbsp;'), array('&amp;',' '),
-                           html_entity_decode($content, ENT_QUOTES, "UTF-8"));
+                          html_entity_decode($content, ENT_QUOTES, "UTF-8"));
+	 
+      //[FINAL]
 
       // If is html content
       if ($CFG_GLPI["use_rich_text"]) {
@@ -6579,8 +6827,11 @@ class Ticket extends CommonITILObject {
 
             echo "<div class='item_content $long_text'>";
             echo "<p>";
+			//[INICIO] CH5917 Deshabilitar Check para Seguimiento, Tareas, etc.: 
+			 
             if (isset($item_i['state'])) {
-               $onClick = "onclick='change_task_state(".$item_i['id'].", this)'";
+               //$onClick = "onclick='change_task_state(".$item_i['id'].", this)'";
+			   $onClick = "style='cursor: not-allowed;'" ;
                if( !$item_i['can_edit'] ) {
                   $onClick = "style='cursor: not-allowed;'" ;
                }
@@ -6589,6 +6840,8 @@ class Ticket extends CommonITILObject {
                            title='".Planning::getState($item_i['state'])."'>";
                echo "</span>";
             }
+			
+			//[FINAL]
             echo $content;
             echo "</p>";
             if (!empty($long_text)) {

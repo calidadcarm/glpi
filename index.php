@@ -73,6 +73,13 @@ if (!file_exists(GLPI_CONFIG_DIR . "/config_db.php")) {
    echo '<head><title>'.__('GLPI - Authentication').'</title>'."\n";
    echo '<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>'."\n";
    echo '<meta http-equiv="Content-Script-Type" content="text/javascript"/>'."\n";
+   //[INICIO] CH5817 Cambio para No-Cache
+   echo '<meta http-equiv="Expires" content="0"/>'."\n";
+   echo '<meta http-equiv="Last-Modified" content="0"/>'."\n";
+   echo '<meta http-equiv="Cache-Control" content="no-cache, mustrevalidate"/>'."\n";
+   echo '<meta http-equiv="Pragma" content="no-cache"/>'."\n";   
+   //[FINAL]
+   
    echo "<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\n";
    echo '<link rel="shortcut icon" type="images/x-icon" href="'.$CFG_GLPI["root_doc"].
           '/pics/favicon.ico" />';
@@ -172,9 +179,16 @@ if (!file_exists(GLPI_CONFIG_DIR . "/config_db.php")) {
 
    // Display FAQ is enable
    if ($CFG_GLPI["use_public_faq"]) {
+	   
+	   //[INICIO] JMZ18G Acceso a preguntas frecuentes - Ticket - ID: 484338 - 05/07/2018
+	   echo '<br><br>';
+	    // [FINAL]
+		
       echo '<div id="box-faq">'.
             '<a href="front/helpdesk.faq.php">[ '.__('Access to the Frequently Asked Questions').' ]';
       echo '</a></div>';
+	  
+	  
    }
 
    echo "<div id='display-login'>";

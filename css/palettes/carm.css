@@ -1,0 +1,365 @@
+
+/* ===== LOGIN ===== */
+
+#firstboxlogin  {
+   /* background-color: #1B2F62; ORIGINAL */
+   /* emb97m 20-01-2017 - Logo pantalla inicial */
+   height: 379px;
+   width: 907px;
+   margin-top:150px;
+   margin-left: auto;
+   margin-right: auto;
+   font-family : Verdana,Arial,Helvetica,sans-serif;
+   font-size : 12px;
+   /*   emb97m 13072015 - color Usuario y Contrase�a */
+   color :#777777; /* Nuevo estilo rica */
+   font-weight: bold;
+   /* background-color:#ffffff;*/
+   padding:10px;
+   position: relative;  
+}
+
+#logo_login {
+   /* background: url(../../pics/login_logo_glpi.png) center no-repeat, #3A5693; ORIGINAL */
+   /* emb97m 20-01-2017 - Logo pantalla inicial - Modificado tama�o y posici�n */
+   position:absolute;
+   padding:0;
+   margin:0;
+   width: 908px;
+   height: 379px;   
+   background: url(../../pics/carm_login_glpi.png) center no-repeat;
+}
+
+
+#display-login {
+   color: #FFF;
+}
+
+#text-login {
+  /* background-color: #3A5693;
+   color: #FFF; ORIGINAL */
+  /* ORIGINAL background-color: grey; color: #FFF;*/
+  /* emb97m 20-01-2017 */
+   font-size: 13px;
+   height: 80px;
+   width: 100%;
+   color :#993333;
+   overflow: auto;
+   position: relative;
+   bottom: 70px;   
+   text-align: justify;  
+   padding-left: 10%;
+   padding-right: 10%;   
+}
+#contenulogin {
+/* emb97m 20-01-2017 - pantalla de inicio 
+					Cambio tama�o y posici�n
+					Cambio imagen de background 
+					Tipo de letra sacado del estilo RICA */
+   height: 266px;
+   width: 600px;
+   margin-top:100px;
+   margin-left: auto;
+   margin-right: auto;
+   background:url("../plugins/estilocarm/pics/carm_login_glpi.png")  no-repeat;
+   font-family : Verdana,Arial,Helvetica,sans-serif;
+   font-size : 12px;
+   color :#666666;
+   font-weight: bold;
+}
+
+#boxlogin {
+   position: relative;
+  /*  emb97m 20-01-2017 Cambio caja login inicial */
+   margin-left:70px; 
+   margin-top:72px; /* emb97m  08/06/2017 cambiamos el valor para subir la caja hacia arriba */
+   text-align: left;  /* Bug IE Grrr */
+   width: 300px;
+   height: 140px;  /* emb97m  08/06/2017 cambiamos el valor para hacer la caja mas peque�a */
+   padding:10px;
+   background:#F6F7F9; //fam80b 18/09/2017 Cambio de color caja
+}
+
+#boxlogin fieldset {
+   background-color: transparent;
+   /* emb97m 20-01-2017 - Cambiamos borde 
+		border: 2px solid #FFC65D;*/
+   border: 2px solid #f6f7f9;
+   padding-bottom:22px;
+   position: static;
+
+}
+
+#boxlogin legend {
+   font-family:"Trebuchet MS",Verdana,Geneva,Arial,Helvetica,sans-serif;
+   font-size: 15px;
+   font-weight: 700;
+   background-color: transparent;
+   /* emb97m 20-01-2017 - Cambio color de letra */
+   color: #666666;
+}
+
+#boxlogin input {
+
+ /* emb97m 20-01-2017 - Cambiamos color verde
+		border: 1px solid #659900;*/
+    border: 1px solid #666666;
+	background-color: #F1EEE8;
+   -moz-border-radius:5px;
+   -webkit-border-radius:5px;
+}
+
+#boxlogin input[type=text]:focus,
+ #boxlogin input[type=password]:focus{
+	/* emb97m - 20-01-2017- Color mostaza borde cuadros de texto del login 
+	   border-color:#FFA500; */
+    background-color: #F7F3EC;
+   -moz-box-shadow:0 0 3px #FFA500;
+   -webkit-box-shadow:0 0 3px #FFA500;
+   outline:none; /* Pour enlever le contour jaune lorsque l'on s�lectionne un input dans Chrome */
+}
+
+#footer-login {
+   text-align:right;
+   position: fixed !important;
+   left: 0px;
+   right: 10px;
+   bottom: 0px !important;
+   height: 40px;
+   font-size : 10px;
+   /* emb97m Cambio color texto 
+			color :#757575; */
+   color: #cccccc!important;
+   font-family: Verdana,Arial,Helvetica,sans-serif;
+   font-weight: bold;
+   margin-top:10px;
+   margin:auto;
+    /*css hack for IE*/
+   position: absolute;
+   bottom: auto;
+   top: expression((parseInt(document.documentElement.clientHeight)+parseInt(document.documentElement.scrollTop)-42)+'px');
+   width: expression(parseInt(document.documentElement.clientWidth)+'px');
+}
+.copyright {
+   font-size: 9px;
+   color :#004573; /* emb97m 13072015 - color copyright estilo nuevo*/
+}
+/* ################--------------- Footer  ---------------#################### */
+
+#footer {
+ 
+    font-size: 0.9em;
+	padding: 3px;
+	/* margin-top: 200px; emb97m 20-01-2017 - lo quitamos para que el pie se ajuste al final de pagina como en nueva version rica*/
+	clear:both;
+	width: 100%;
+	/* emb97m  20-01-2017 Modificaciones para incluir estilo pie rica */
+	border-bottom: 3px solid #993333;
+    border-top: 2px solid #993333;
+	background: #ffffff;
+	color: #004573 !important; /* emb97m  20-01-2017 Color letras pie */
+    /*	padding-top: 1.8em;*/
+	float: right;  
+}
+
+/* ====== GENERAL ====== */
+
+a, a:link, .ui-widget-content a {
+   /*  color : #3A5693; ORIGINAL */
+   color: #004573;
+}
+
+.main_form tr.headerRow th {
+   /* color: #8CABDB; ORIGINAL */
+   color: #993333;
+}
+/*.tab_bg_1 {
+   background-color: #F2F2F2; //fam80b cambio color gris
+}*/
+
+/* ====== HEADER ====== */
+#header_top {
+   background-color: #993333;
+}
+
+#header #c_logo { /* INFORGES Junio 2017 - Tama�o caja logo en la cabecera */
+   width: 141px;
+   height: 57px;
+}
+
+#c_preference a {
+   color: #C7DBF5;
+}
+
+#c_recherche form #champRecherche input {
+   background-color: #131425;
+   color: #C7DBF5;
+}
+
+#c_menu {
+   background-color: #b53d3d; /* INFORGES Granate m�s claro  = mitad superior */
+}
+
+ul#menu a.itemP, ul#menu a.itemP1 {
+   /* color: #FFF; ORIGINAL */
+      color: #fbf1f3;
+}
+
+ul#menu > li.active,
+ul.ssmenu li.active {
+  /*  background-color: #8CABDB; ORIGINAL - emb97m - 20-01-2017 -  Color foco menu superior seleccionado*/
+   background-color: #993333;
+}
+
+ul#menu > li.active > a,
+ul#menu ul.ssmenu li.active > a {
+   color: #FFF;
+   background-color: #993333;
+}
+
+ul#menu > li:hover {
+  /* background-color: #8BAADA; ORIGINAL */
+  background-color: #993333;
+  color: #ffffff;
+}
+
+ul#menu ul li a:hover {
+   /* background: #3A5693; ORIGINAL */
+  /*  color: #C7DBF5; */   
+   background: #993333;
+   color: #ffffff;
+}
+
+ul#menu ul li a {
+   color: #004573;
+   background: rgba(255, 255, 255, 255); /* emb97m 12-12-2017- Color del menu solido a blanco*/
+}
+
+/* ====== BUTTONS ====== */
+
+a.vsubmit, 
+.vsubmit a {
+   color: #8f5a0a;
+}
+
+#BackToTop {
+   background-color: #1B2F62;
+   color: #fff;
+}
+
+/* ################--------------- Table  ---------------#################### */
+.tab_bg_2 {
+   background-color: #f2f2f2;
+}
+
+.tab_glpi {
+   margin: 0 auto;
+}
+
+.tab_cadre {
+   margin: 0 auto;
+   z-index:1;
+   text-align: left;
+   font-size: 11px;
+   background-color: #f2f2f2;
+   border-spacing: 0;
+   box-shadow: 0px 1px 2px 1px #999;
+}
+
+.tab_cadre_central {
+  /* margin: 0 auto;
+   /*border: 1px solid #bbbbbb;*/
+   z-index:1;
+   text-align: left;
+   font-size: 11px;
+   width:100%;
+   background: #ece6e6 !important; /* INFORGES color crema pantalla inicio */ 
+
+}
+
+.tab_cadre th, .tab_cadre_fixe th, .tab_cadre_fixehov th, .tab_cadrehov th {
+   font-size: 12px;
+   font-weight: bold;
+  /* emb97m - 03/07/2015 - Azul claro - fondo celdas formulario */
+   background-color: #d2e3f7;
+ 
+   padding: 5px;
+}
+
+.central .tab_cadre_fixehov th, .central .tab_cadrehov th {
+   background-color: #d2e3f7;
+}
+/*fam80b modificaciones para la tabla actor*/
+.responsive_hidden{
+     background-color: #D2E3F7;
+}
+responsive_hidden.actor_title {
+   width: 13%;
+   float: left;
+   font-weight: bold;
+   text-align: center;
+   padding-top: 30px;
+   font-size: 1.1em;
+   padding: 3px 5px;
+   background-color: #D2E3F7;
+}
+.actor-head {
+   background-color: #D2E3F7;
+   margin: 0 0 0 5px;
+   padding: 4px 0;
+   height: 16px;
+   font-weight: bold;
+   text-align: center;
+   font-size: 1.1em;
+}
+/*fin de las modificaciones para la tabla actor*/
+
+/* ################--------------- jquery-glpi.css ---------------#################### */
+.ui-tabs {
+   /*width: 98%; emb97m*/
+   width:90%; /* emb97m - 08/06/2017 Cambiamos el tama�o fijo a un valor de porcentaje */
+   margin: 0 auto;
+   z-index:1;
+   text-align: left;
+ /*  margin: auto;*/
+}
+.ui-widget-header {
+	/* emb97m
+	border: 1px solid #aaaaaa;
+	background: #cccccc url(images/ui-bg_highlight-soft_75_cccccc_1x100.png) 50% 50% repeat-x;*/
+	color: #222222;
+	font-weight: bold;
+}
+
+.tab_cadrehov tr.rowHover,
+.tab_cadrehov td.rowHover,
+.tab_cadre_fixehov tr.rowHover,
+.tab_cadre_fixehov td.rowHover{   /* emb97m - 2017/06/23 linea seleccionada en una tabla */
+   background-color: #e7e7e2 !important;
+}
+/* emb97m - 2017/06/28 color tabla recordatorio */
+.fc .fc-list-table {
+   table-layout: auto; /* for shrinkwrapping cell content */
+}
+
+.fc-list-table td {
+   border-width: 1px 0 0;
+   padding: 8px 14px;
+   background: #f1f1f1 !important;
+}
+
+.fc-list-table tr:first-child td {
+   border-top-width: 0;
+   background: #d2e3f7 !important;
+}
+
+.fc-list-item tr {
+   background-color:#ff6000;
+}
+/* fin color tabla recordatorio */
+
+.layout_lefttab .new_form_tabs .ui-tabs-panel {
+   margin: 0;
+   clear: both;
+   background: #ece6e6;
+}

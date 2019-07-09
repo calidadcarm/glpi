@@ -1682,6 +1682,8 @@ abstract class CommonITILObject extends CommonDBTM {
     *
     * @return array of doc added name
    **/
+   
+   
    function addFiles($donotif=1, $disablenotif=0) {
       global $CFG_GLPI;
       if (!isset($this->input['_filename']) || (count($this->input['_filename']) == 0)) {
@@ -1791,8 +1793,7 @@ abstract class CommonITILObject extends CommonDBTM {
       }
 
       return $docadded;
-   }
-
+   } 
 
    /**
     * Compute Priority
@@ -2757,6 +2758,11 @@ abstract class CommonITILObject extends CommonDBTM {
           && $CFG_GLPI["use_rich_text"]) {
          $tab[21]['htmltext'] = true;
       }
+	  // [INICIO] CH16 CRI Texto enriquecido en cambios 11/09/2017
+      if ($this->getType() == 'Change') {
+         $tab[21]['htmltext'] = true;
+      }	  
+	  // [FIN] CH16 CRI	  
 
       $tab[2]['table']                = $this->getTable();
       $tab[2]['field']                = 'id';
@@ -3020,7 +3026,10 @@ abstract class CommonITILObject extends CommonDBTM {
       $tab[65]['name']          = __('Watcher group');
       $tab[65]['forcegroupby']  = true;
       $tab[65]['massiveaction'] = false;
-      $tab[65]['condition']     = 'is_requester';
+      //[INICIO] CH01 Gobierno TI: 11/09/2017
+	  // $tab[65]['condition']     = 'is_requester';
+	  $tab[65]['condition']     = 'is_assign';
+	  //[FIN]
       $tab[65]['joinparams']    = array('beforejoin'
                                          => array('table'
                                                    => getTableForItemType($this->grouplinkclass),
@@ -3887,7 +3896,10 @@ abstract class CommonITILObject extends CommonDBTM {
             Group::dropdown(array('name'      => '_groups_id_observer',
                                   'value'     => $options["_groups_id_observer"],
                                   'entity'    => $this->fields["entities_id"],
-                                  'condition' => '`is_requester`'));
+								  //[INICIO] CH01 Gobierno TI: 11/09/2017								  
+								  'condition' => '`is_assign`'));
+                                  // 'condition' => '`is_requester`'));
+								  //[FIN]
          } else { // predefined value
             if (isset($options["_groups_id_observer"]) && $options["_groups_id_observer"]) {
                echo self::getActorIcon('group', CommonITILActor::OBSERVER)."&nbsp;";

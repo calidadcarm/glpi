@@ -50,6 +50,7 @@ $date_fields = [
    'time_to_own'
 ];
 
+
 foreach ($date_fields as $date_field) {
    //handle not clean dates...
    if (isset($_POST["_$date_field"])

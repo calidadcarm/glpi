@@ -46,10 +46,11 @@ if (isset($_GET["item_type"]) && isset($_GET["display_type"])) {
    }
 
    switch ($_GET["item_type"]) {
-      case 'KnowbaseItem' :
+	   //[INICIO] JMZ18G - 12/02/2019 - Error Exportación en csv Base de datos del conocimiento. Comentamos código original. 
+       /* case 'KnowbaseItem' :
          KnowbaseItem::showList($_GET, $_GET["is_faq"]);
-         break;
-
+         break;*/
+	   //[FINAL] JMZ18G - 12/02/2019 - Error Exportación en csv Base de datos del conocimiento.
       case 'Stat' :
          if (isset($_GET["item_type_param"])) {
             $params = Toolbox::decodeArrayFromInput($_GET["item_type_param"]);

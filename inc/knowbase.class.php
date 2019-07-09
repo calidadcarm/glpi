@@ -67,8 +67,8 @@ class Knowbase extends CommonGLPI {
    function getTabNameForItem(CommonGLPI $item, $withtemplate=0) {
 
       if ($item->getType() == __CLASS__) {
-         $tabs[1] = _x('button', 'Search');
-         $tabs[2] = _x('button', 'Browse');
+         $tabs[1] = _x('button', 'Browse'); // [CH42] cambiar Search por Browse 13/09/2017
+         $tabs[2] = _x('button', 'Search'); // [CH42] cambiar Browse por Search 13/09/2017
          if (KnowbaseItem::canUpdate()) {
             $tabs[3] = _x('button', 'Manage');
          }
@@ -84,11 +84,11 @@ class Knowbase extends CommonGLPI {
       if ($item->getType() == __CLASS__) {
          switch ($tabnum) {
             case 1 : // all
-               $item->showSearchView();
+               $item->showBrowseView(); // [CH42] cambiar funcion  por showBrowseView 13/09/2017
                break;
 
             case 2 :
-               $item->showBrowseView();
+			   $item->showSearchView(); // [CH42] cambiar funcion showBrowseView por showSearchView 13/09/2017
                break;
 
             case 3 :
@@ -123,8 +123,15 @@ class Knowbase extends CommonGLPI {
          $_GET['contains'] = $_SESSION["kbcontains"];
       }
       $ki = new KnowbaseItem();
-      $ki->searchForm($_GET);
 
+      //[INICIO] JMZ18G - 11/07/2018 - Permite buscar items por cada uno de sus campos. 
+      if (empty($_SESSION['glpiactiveprofile']["id"])){
+      $ki->searchForm($_GET); //Eliminada búsqueda original
+      } else {
+	       Search::show('KnowbaseItem');    
+      }  
+      //[FINAL] JMZ18G - 11/07/2018 - Permite buscar items por cada uno de sus campos.
+      
       if (!isset($_GET['contains']) || empty($_GET['contains'])) {
          echo "<div><table class='center-h' width='950px'><tr class='noHover'><td class='center top'>";
          KnowbaseItem::showRecentPopular("recent");

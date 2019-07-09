@@ -120,10 +120,14 @@ if (isset($_POST["type"])
             break;
 
          case "group" :
-            $cond = '`is_requester`';
+		    //[INICIO] CH01 Gobierno TI: 11/09/2017		 
+            /*$cond = '`is_requester`';
             if ($_POST["actortype"] == 'assign')  {
                $cond = '`is_assign`';
             }
+			*/
+			$cond = ($_POST["actortype"]=='assign' ? $cond = '`is_assign`' : ($_POST["actortype"]=='observer' ? $cond = '`is_assign`' : $cond = '`is_requester`'));
+            //[FIN]			
             
             $param = array('name'      => '_itil_'.$_POST["actortype"].'[groups_id]',
                            'entity'    => $_POST['entity_restrict'],
